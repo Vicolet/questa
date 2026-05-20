@@ -106,16 +106,14 @@ fn data_dir() -> Option<PathBuf> {
 }
 
 pub fn load(path: &Path) -> Result<Tracker> {
-    let s = std::fs::read_to_string(path)
-        .with_context(|| format!("reading {}", path.display()))?;
-    let t: Tracker = serde_json::from_str(&s)
-        .with_context(|| format!("parsing {}", path.display()))?;
+    let s = std::fs::read_to_string(path).with_context(|| format!("reading {}", path.display()))?;
+    let t: Tracker =
+        serde_json::from_str(&s).with_context(|| format!("parsing {}", path.display()))?;
     Ok(t)
 }
 
 pub fn save(path: &Path, t: &Tracker) -> Result<()> {
-    let s = serde_json::to_string_pretty(t)
-        .with_context(|| format!("serializing tracker"))?;
+    let s = serde_json::to_string_pretty(t).context("serializing tracker")?;
     std::fs::write(path, format!("{s}\n"))
         .with_context(|| format!("writing {}", path.display()))?;
     Ok(())
@@ -145,7 +143,9 @@ pub fn days_until(d: &str) -> Option<i64> {
 
 pub fn rel_date(d: Option<&str>) -> String {
     let Some(d) = d else { return "—".into() };
-    let Some(n) = days_since(d) else { return d.into() };
+    let Some(n) = days_since(d) else {
+        return d.into();
+    };
     match n {
         0 => "today".into(),
         1 => "yesterday".into(),

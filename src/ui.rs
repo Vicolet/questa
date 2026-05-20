@@ -7,7 +7,10 @@ use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style, Stylize},
     text::{Line, Span},
-    widgets::{Block, Borders, Cell, Clear, List, ListItem, ListState, Paragraph, Row, Table, TableState, Wrap},
+    widgets::{
+        Block, Borders, Cell, Clear, List, ListItem, ListState, Paragraph, Row, Table, TableState,
+        Wrap,
+    },
 };
 
 // ── Status colours ────────────────────────────────────────────────────────
@@ -62,10 +65,7 @@ fn draw_header(f: &mut Frame, app: &App, area: Rect) {
         Span::raw("│ "),
         Span::raw(format!("Total {} ", c.total)),
         Span::raw("· "),
-        Span::styled(
-            format!("Active {} ", c.active),
-            Style::default().fg(ACCENT),
-        ),
+        Span::styled(format!("Active {} ", c.active), Style::default().fg(ACCENT)),
     ];
     if c.interview > 0 {
         spans.push(Span::raw("· "));
@@ -135,7 +135,11 @@ fn draw_list(f: &mut Frame, app: &App, area: Rect) {
         .iter()
         .map(|a| {
             let dimmed = matches!(a.status.as_str(), "rejected" | "ghosted" | "withdrawn");
-            let main_color = if dimmed { Color::DarkGray } else { Color::White };
+            let main_color = if dimmed {
+                Color::DarkGray
+            } else {
+                Color::White
+            };
             let sub_color = if dimmed {
                 Color::Rgb(53, 58, 79)
             } else {
@@ -251,7 +255,11 @@ fn draw_detail(f: &mut Frame, app: &App, area: Rect) {
     }
     lines.push(Line::raw(""));
 
-    lines.push(detail_row("Status", &a.status, Some(status_color(&a.status))));
+    lines.push(detail_row(
+        "Status",
+        &a.status,
+        Some(status_color(&a.status)),
+    ));
     if let Some(t) = &a.app_type {
         lines.push(detail_row("Type", t, None));
     }
@@ -335,7 +343,9 @@ fn draw_detail(f: &mut Frame, app: &App, area: Rect) {
         }
     }
 
-    let p = Paragraph::new(lines).block(block).wrap(Wrap { trim: false });
+    let p = Paragraph::new(lines)
+        .block(block)
+        .wrap(Wrap { trim: false });
     f.render_widget(p, area);
 }
 
@@ -524,10 +534,7 @@ fn draw_note_input(f: &mut Frame, area: Rect, buffer: &str) {
             Style::default().fg(Color::DarkGray),
         )),
     ];
-    f.render_widget(
-        Paragraph::new(lines).wrap(Wrap { trim: false }),
-        inner,
-    );
+    f.render_widget(Paragraph::new(lines).wrap(Wrap { trim: false }), inner);
 }
 
 fn section_title(text: &str) -> Line<'static> {

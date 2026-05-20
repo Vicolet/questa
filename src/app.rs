@@ -224,7 +224,10 @@ impl App {
     }
 
     pub fn cycle_filter(&mut self) {
-        let i = Filter::ALL.iter().position(|f| *f == self.filter).unwrap_or(0);
+        let i = Filter::ALL
+            .iter()
+            .position(|f| *f == self.filter)
+            .unwrap_or(0);
         self.set_filter(Filter::ALL[(i + 1) % Filter::ALL.len()]);
     }
 
@@ -380,8 +383,10 @@ impl App {
     // ── Dashboard stats ────────────────────────────────────────────────────
 
     pub fn counts(&self) -> Counts {
-        let mut c = Counts::default();
-        c.total = self.tracker.applications.len();
+        let mut c = Counts {
+            total: self.tracker.applications.len(),
+            ..Default::default()
+        };
         for a in &self.tracker.applications {
             match a.status.as_str() {
                 "applied" | "screening" | "interview" | "technical" | "offer" => c.active += 1,
