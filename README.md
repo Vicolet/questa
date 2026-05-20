@@ -55,6 +55,10 @@ questa --data ~/jobs/applications.json
 
 Requires Rust 1.85+ ([install via rustup](https://www.rust-lang.org/tools/install)).
 
+### Pre-built binaries
+
+Each release attaches pre-built binaries for Linux, macOS (Intel and Apple Silicon), and Windows on the [releases page](https://github.com/Vicolet/questa/releases/latest). Download, extract, and drop the binary somewhere on your `$PATH`. No Rust toolchain required.
+
 ### Try the demo without installing
 
 ```bash
@@ -132,6 +136,7 @@ questa --version
 |-----|--------------------------------------------------------------|
 | `s` | change status (picker overlay, `j`/`k` to select, `enter`)   |
 | `n` | add a note (text field, dated today on save)                 |
+| `O` | open the selected application's `folder` in the system file manager |
 
 Mutations write to `applications.json` immediately.
 
