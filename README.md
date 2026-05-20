@@ -4,9 +4,11 @@
 
 **A keyboard-driven TUI for tracking your job quest.**
 
-[![Build](https://img.shields.io/badge/build-cargo-orange?logo=rust)](https://www.rust-lang.org/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.1.0-brightgreen.svg)](CHANGELOG.md)
+[![Crates.io](https://img.shields.io/crates/v/questa.svg?logo=rust)](https://crates.io/crates/questa)
+[![Downloads](https://img.shields.io/crates/d/questa.svg)](https://crates.io/crates/questa)
+[![docs.rs](https://img.shields.io/docsrs/questa)](https://docs.rs/questa)
+[![MSRV](https://img.shields.io/badge/MSRV-1.85-blue)](https://www.rust-lang.org)
+[![License: MIT](https://img.shields.io/crates/l/questa.svg)](LICENSE)
 
 `questa` is a small, focused terminal app that turns a single `applications.json` file into a fast, navigable dashboard for your job search. Filter, sort, search, edit status, and add notes without ever leaving the keyboard.
 
