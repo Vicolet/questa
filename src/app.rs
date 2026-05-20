@@ -4,7 +4,7 @@ use crate::data::{self, Application, Note, Tracker};
 use anyhow::Result;
 use fuzzy_matcher::FuzzyMatcher;
 use fuzzy_matcher::skim::SkimMatcherV2;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Filter {
@@ -380,6 +380,34 @@ impl App {
         self.error = None;
     }
 
+    // ── Open folder ────────────────────────────────────────────────────────
+
+    /// Open the folder of the selected application in the system's default
+    /// file manager. The folder field is interpreted as a path relative to
+    /// the directory containing applications.json, unless it is absolute.
+    pub fn open_selected_folder(&mut self) {
+        let Some(app) = self.selected_app() else {
+            self.flash = Some("no selection".into());
+            return;
+        };
+        let Some(folder) = app.folder.as_deref().filter(|s| !s.is_empty()) else {
+            self.flash = Some("no folder set on this entry".into());
+            return;
+        };
+        let target = resolve_folder_path(&self.data_path, folder);
+        if !target.exists() {
+            self.error = Some(format!("folder not found: {}", target.display()));
+            return;
+        }
+        match std::process::Command::new(open_command())
+            .arg(&target)
+            .spawn()
+        {
+            Ok(_) => self.flash = Some(format!("opened {}", target.display())),
+            Err(e) => self.error = Some(format!("failed to open: {e}")),
+        }
+    }
+
     // ── Dashboard stats ────────────────────────────────────────────────────
 
     pub fn counts(&self) -> Counts {
@@ -417,6 +445,28 @@ impl App {
     }
 }
 
+/// Resolve a folder path declared in an application entry against the
+/// directory that holds applications.json. Absolute paths are returned
+/// unchanged so users can opt into a fixed location if they want.
+pub fn resolve_folder_path(data_path: &Path, folder: &str) -> PathBuf {
+    let p = PathBuf::from(folder);
+    if p.is_absolute() {
+        return p;
+    }
+    let base = data_path.parent().unwrap_or_else(|| Path::new("."));
+    base.join(p)
+}
+
+fn open_command() -> &'static str {
+    if cfg!(target_os = "macos") {
+        "open"
+    } else if cfg!(target_os = "windows") {
+        "explorer"
+    } else {
+        "xdg-open"
+    }
+}
+
 #[derive(Debug, Default)]
 pub struct Counts {
     pub total: usize,
@@ -426,4 +476,68 @@ pub struct Counts {
     pub ghosted: usize,
     pub overdue: usize,
     pub this_week: usize,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn filter_matches_groups_active_statuses() {
+        assert!(Filter::Active.matches("applied"));
+        assert!(Filter::Active.matches("screening"));
+        assert!(Filter::Active.matches("interview"));
+        assert!(Filter::Active.matches("offer"));
+        assert!(!Filter::Active.matches("rejected"));
+        assert!(!Filter::Active.matches("ghosted"));
+    }
+
+    #[test]
+    fn filter_all_matches_everything() {
+        for s in &[
+            "applied",
+            "screening",
+            "interview",
+            "rejected",
+            "ghosted",
+            "withdrawn",
+        ] {
+            assert!(Filter::All.matches(s), "All should match {s}");
+        }
+    }
+
+    #[test]
+    fn sort_next_cycles_through_three_modes() {
+        assert_eq!(Sort::DateDesc.next(), Sort::Status);
+        assert_eq!(Sort::Status.next(), Sort::Company);
+        assert_eq!(Sort::Company.next(), Sort::DateDesc);
+    }
+
+    #[test]
+    fn status_priority_orders_actionable_first() {
+        // interview, technical, offer come before passive states.
+        assert!(status_priority("interview") < status_priority("applied"));
+        assert!(status_priority("interview") < status_priority("rejected"));
+        assert!(status_priority("offer") < status_priority("screening"));
+        // dead-ends are last.
+        assert!(status_priority("ghosted") > status_priority("rejected"));
+    }
+
+    #[test]
+    fn resolve_folder_keeps_absolute_paths_untouched() {
+        let data = PathBuf::from("/etc/questa/applications.json");
+        let abs = if cfg!(windows) {
+            r"C:\Users\me\jobs\acme"
+        } else {
+            "/home/me/jobs/acme"
+        };
+        assert_eq!(resolve_folder_path(&data, abs), PathBuf::from(abs));
+    }
+
+    #[test]
+    fn resolve_folder_joins_relative_to_data_dir() {
+        let data = PathBuf::from("/home/me/jobs/applications.json");
+        let resolved = resolve_folder_path(&data, "acme/intern");
+        assert_eq!(resolved, PathBuf::from("/home/me/jobs/acme/intern"));
+    }
 }

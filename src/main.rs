@@ -148,6 +148,7 @@ fn handle_key(app: &mut App, code: KeyCode, mods: KeyModifiers) {
         KeyCode::Char('5') => app.set_filter(Filter::Ghosted),
         KeyCode::Tab => app.cycle_filter(),
         KeyCode::Char('o') => app.cycle_sort(),
+        KeyCode::Char('O') => app.open_selected_folder(),
         KeyCode::Char('/') => app.enter_search(),
         KeyCode::Char('s') => app.open_status_picker(),
         KeyCode::Char('n') => app.open_note_input(),
