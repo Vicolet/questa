@@ -1,0 +1,427 @@
+{
+  "applications": [
+    {
+      "id": 1,
+      "company": "Acme Robotics",
+      "position": "Junior Embedded Engineer",
+      "location": "Zurich, Switzerland",
+      "type": "full-time",
+      "ref": "ENG-2026-018",
+      "url": "https://example.com/jobs/acme-embedded",
+      "applied_date": "2026-04-12",
+      "deadline": null,
+      "salary": null,
+      "folder": "acme-robotics/junior-embedded-engineer",
+      "status": "interview",
+      "contacts": [
+        {
+          "date": "2026-04-22",
+          "info": "Anna Berger - Talent Acquisition (anna.berger@example.com)"
+        },
+        {
+          "date": "2026-05-02",
+          "info": "Mark Steiner - Hiring Manager, Embedded Team"
+        }
+      ],
+      "notes": [
+        {
+          "date": "2026-04-12",
+          "text": "Applied through the careers page. Position emphasises RTOS experience and Rust on bare metal."
+        },
+        {
+          "date": "2026-04-22",
+          "text": "Recruiter screen scheduled for May 5. Standard 30 minute behavioural call."
+        },
+        {
+          "date": "2026-05-02",
+          "text": "Passed recruiter screen. Technical interview booked May 22 at 14h, 60 minutes, video."
+        }
+      ],
+      "next_action": "Prepare technical interview",
+      "next_action_date": "2026-05-21"
+    },
+    {
+      "id": 2,
+      "company": "Northwind Bank",
+      "position": "IT Security Analyst",
+      "location": "Geneva, Switzerland",
+      "type": "full-time",
+      "ref": "",
+      "url": "https://example.com/jobs/northwind-sec",
+      "applied_date": "2026-04-30",
+      "deadline": null,
+      "salary": null,
+      "folder": "northwind-bank/it-security-analyst",
+      "status": "screening",
+      "contacts": [
+        {
+          "date": "2026-05-04",
+          "info": "Julia Roth - HR Business Partner"
+        }
+      ],
+      "notes": [
+        {
+          "date": "2026-04-30",
+          "text": "Applied with tailored CV emphasising threat modelling and TLS audit experience."
+        },
+        {
+          "date": "2026-05-04",
+          "text": "Confirmation email. HR will be in touch within two weeks."
+        }
+      ],
+      "next_action": "Follow up if no reply",
+      "next_action_date": "2026-05-20"
+    },
+    {
+      "id": 3,
+      "company": "Helios Labs",
+      "position": "Machine Learning Engineer (Junior)",
+      "location": "Amsterdam, Netherlands",
+      "type": "full-time",
+      "ref": "ML-072",
+      "url": "https://example.com/jobs/helios-ml",
+      "applied_date": "2026-05-08",
+      "deadline": null,
+      "salary": null,
+      "folder": "helios-labs/ml-engineer-junior",
+      "status": "applied",
+      "contacts": [],
+      "notes": [
+        {
+          "date": "2026-05-08",
+          "text": "Highlighted RAG coursework and the LangChain side project in the cover letter."
+        }
+      ],
+      "next_action": "Follow up if no reply",
+      "next_action_date": "2026-05-29"
+    },
+    {
+      "id": 4,
+      "company": "Brightline Consulting",
+      "position": "Cyber Security Consultant",
+      "location": "Bern, Switzerland",
+      "type": "full-time",
+      "ref": "CSC-410",
+      "url": "https://example.com/jobs/brightline-csc",
+      "applied_date": "2026-03-20",
+      "deadline": null,
+      "salary": null,
+      "folder": "brightline/cyber-security-consultant",
+      "status": "rejected",
+      "contacts": [],
+      "notes": [
+        {
+          "date": "2026-03-20",
+          "text": "Applied via referral from a former classmate."
+        },
+        {
+          "date": "2026-04-04",
+          "text": "Rejection email: 'we have decided to move forward with candidates whose experience aligns more closely with the role'."
+        }
+      ],
+      "next_action": null,
+      "next_action_date": null
+    },
+    {
+      "id": 5,
+      "company": "Tidewater Maritime",
+      "position": "Embedded Systems Intern",
+      "location": "Lausanne, Switzerland",
+      "type": "internship",
+      "ref": "",
+      "url": "https://example.com/jobs/tidewater-intern",
+      "applied_date": "2026-04-02",
+      "deadline": null,
+      "salary": null,
+      "folder": "tidewater/embedded-intern",
+      "status": "ghosted",
+      "contacts": [],
+      "notes": [
+        {
+          "date": "2026-04-02",
+          "text": "Applied through small careers page. No automated confirmation."
+        }
+      ],
+      "next_action": null,
+      "next_action_date": null
+    },
+    {
+      "id": 6,
+      "company": "Quartz Insurance Group",
+      "position": "GRC Analyst",
+      "location": "Remote, EU",
+      "type": "full-time",
+      "ref": "GRC-22",
+      "url": "https://example.com/jobs/quartz-grc",
+      "applied_date": "2026-05-05",
+      "deadline": null,
+      "salary": null,
+      "folder": "quartz-insurance/grc-analyst",
+      "status": "screening",
+      "contacts": [
+        {
+          "date": "2026-05-07",
+          "info": "Lena Hoffmann - People Operations"
+        }
+      ],
+      "notes": [
+        {
+          "date": "2026-05-05",
+          "text": "Applied. Posting mentioned ISO 27001 and a strong governance frame."
+        },
+        {
+          "date": "2026-05-07",
+          "text": "Asked to complete a short take-home exercise (data classification policy review) by May 19."
+        }
+      ],
+      "next_action": "Submit take-home exercise",
+      "next_action_date": "2026-05-19"
+    },
+    {
+      "id": 7,
+      "company": "Mistral Robotics",
+      "position": "Junior Cyber-Physical Systems Engineer",
+      "location": "Toulouse, France",
+      "type": "full-time",
+      "ref": "CPS-009",
+      "url": "https://example.com/jobs/mistral-cps",
+      "applied_date": "2026-04-18",
+      "deadline": null,
+      "salary": null,
+      "folder": "mistral-robotics/junior-cps-engineer",
+      "status": "offer",
+      "contacts": [
+        {
+          "date": "2026-04-25",
+          "info": "Sarah Lefevre - Talent Lead"
+        },
+        {
+          "date": "2026-05-09",
+          "info": "Cedric Aubry - Director of Engineering"
+        }
+      ],
+      "notes": [
+        {
+          "date": "2026-04-18",
+          "text": "Applied after seeing the role posted on LinkedIn."
+        },
+        {
+          "date": "2026-04-25",
+          "text": "Two technical interviews completed (system design + code review). Both went well."
+        },
+        {
+          "date": "2026-05-09",
+          "text": "Offer received: CHF 92k, 25 days holiday, hybrid Lyon, start September 1. Deadline May 23."
+        }
+      ],
+      "next_action": "Reply to offer",
+      "next_action_date": "2026-05-23"
+    },
+    {
+      "id": 8,
+      "company": "Lighthouse Audit",
+      "position": "Penetration Testing Intern",
+      "location": "Brussels, Belgium",
+      "type": "internship",
+      "ref": "",
+      "url": "https://example.com/jobs/lighthouse-pt",
+      "applied_date": "2026-03-15",
+      "deadline": null,
+      "salary": null,
+      "folder": "lighthouse-audit/pentest-intern",
+      "status": "rejected",
+      "contacts": [],
+      "notes": [
+        {
+          "date": "2026-03-29",
+          "text": "Rejection: profile is interesting but they need a candidate already based in Brussels."
+        }
+      ],
+      "next_action": null,
+      "next_action_date": null
+    },
+    {
+      "id": 9,
+      "company": "Cascade Cloud",
+      "position": "Cloud Security Engineer",
+      "location": "Berlin, Germany",
+      "type": "full-time",
+      "ref": "CSE-2026-04",
+      "url": "https://example.com/jobs/cascade-cse",
+      "applied_date": "2026-05-12",
+      "deadline": null,
+      "salary": null,
+      "folder": "cascade-cloud/cloud-security-engineer",
+      "status": "applied",
+      "contacts": [],
+      "notes": [
+        {
+          "date": "2026-05-12",
+          "text": "Strong match on Kubernetes hardening and IaC. Mentioned Terraform and OPA in the letter."
+        }
+      ],
+      "next_action": "Follow up if no reply",
+      "next_action_date": "2026-06-02"
+    },
+    {
+      "id": 10,
+      "company": "Solaris Energy",
+      "position": "Junior Reverse Engineer",
+      "location": "Munich, Germany",
+      "type": "full-time",
+      "ref": "RE-7",
+      "url": "https://example.com/jobs/solaris-re",
+      "applied_date": "2026-02-20",
+      "deadline": null,
+      "salary": null,
+      "folder": "solaris-energy/junior-reverse-engineer",
+      "status": "ghosted",
+      "contacts": [],
+      "notes": [
+        {
+          "date": "2026-02-20",
+          "text": "Applied. No reply, no rejection."
+        }
+      ],
+      "next_action": null,
+      "next_action_date": null
+    },
+    {
+      "id": 11,
+      "company": "Veridian Health",
+      "position": "Information Security Officer (Junior)",
+      "location": "Zurich, Switzerland",
+      "type": "full-time",
+      "ref": "ISO-J-014",
+      "url": "https://example.com/jobs/veridian-iso",
+      "applied_date": "2026-05-13",
+      "deadline": null,
+      "salary": null,
+      "folder": "veridian-health/iso-junior",
+      "status": "applied",
+      "contacts": [],
+      "notes": [
+        {
+          "date": "2026-05-13",
+          "text": "Applied. Hospital group with strong compliance requirements. Letter emphasises GRC coursework."
+        }
+      ],
+      "next_action": "Follow up if no reply",
+      "next_action_date": "2026-06-03"
+    },
+    {
+      "id": 12,
+      "company": "Polaris Securities",
+      "position": "Quant Engineering Intern",
+      "location": "London, United Kingdom",
+      "type": "internship",
+      "ref": "QE-INT-2026",
+      "url": "https://example.com/jobs/polaris-qe",
+      "applied_date": "2026-03-04",
+      "deadline": null,
+      "salary": null,
+      "folder": "polaris-securities/quant-engineering-intern",
+      "status": "withdrawn",
+      "contacts": [
+        {
+          "date": "2026-03-18",
+          "info": "Hugo Bennett - Campus Recruiting"
+        }
+      ],
+      "notes": [
+        {
+          "date": "2026-03-04",
+          "text": "Applied. London relocation required."
+        },
+        {
+          "date": "2026-03-18",
+          "text": "Recruiter call planned but cancelled. Withdrew due to accepting another offer earlier."
+        }
+      ],
+      "next_action": null,
+      "next_action_date": null
+    },
+    {
+      "id": 13,
+      "company": "Cobalt Defence",
+      "position": "AI Research Intern",
+      "location": "Paris, France",
+      "type": "internship",
+      "ref": "AIR-2026-03",
+      "url": "https://example.com/jobs/cobalt-ai",
+      "applied_date": "2026-05-10",
+      "deadline": null,
+      "salary": null,
+      "folder": "cobalt-defence/ai-research-intern",
+      "status": "applied",
+      "contacts": [],
+      "notes": [
+        {
+          "date": "2026-05-10",
+          "text": "Defence AI startup. Emphasis on computer vision and edge deployment. Strong match with embedded background."
+        }
+      ],
+      "next_action": "Follow up if no reply",
+      "next_action_date": "2026-05-31"
+    },
+    {
+      "id": 14,
+      "company": "Orion Web",
+      "position": "Full Stack Developer (Junior)",
+      "location": "Geneva, Switzerland",
+      "type": "full-time",
+      "ref": "FSD-J-22",
+      "url": "https://example.com/jobs/orion-fsd",
+      "applied_date": "2026-04-10",
+      "deadline": null,
+      "salary": null,
+      "folder": "orion-web/fullstack-junior",
+      "status": "rejected",
+      "contacts": [],
+      "notes": [
+        {
+          "date": "2026-04-24",
+          "text": "Rejection: profile too security oriented for a generalist full stack role."
+        }
+      ],
+      "next_action": null,
+      "next_action_date": null
+    },
+    {
+      "id": 15,
+      "company": "Vanguard Telecom",
+      "position": "Network Security Engineer",
+      "location": "Frankfurt, Germany",
+      "type": "full-time",
+      "ref": "NSE-09",
+      "url": "https://example.com/jobs/vanguard-nse",
+      "applied_date": "2026-03-28",
+      "deadline": null,
+      "salary": null,
+      "folder": "vanguard-telecom/network-security-engineer",
+      "status": "rejected",
+      "contacts": [
+        {
+          "date": "2026-04-05",
+          "info": "Recruitment Team"
+        }
+      ],
+      "notes": [
+        {
+          "date": "2026-03-28",
+          "text": "Applied. Posting expected 3 years of experience with SIEM at scale."
+        },
+        {
+          "date": "2026-04-05",
+          "text": "Rejection: 'looking for a more senior profile'."
+        }
+      ],
+      "next_action": null,
+      "next_action_date": null
+    }
+  ],
+  "_meta": {
+    "next_id": 16,
+    "version": "1.0"
+  }
+}
