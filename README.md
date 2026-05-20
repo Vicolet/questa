@@ -5,6 +5,7 @@
 **A keyboard-driven TUI for tracking your job quest.**
 
 [![Crates.io](https://img.shields.io/crates/v/questa.svg?logo=rust)](https://crates.io/crates/questa)
+[![CI](https://github.com/Vicolet/questa/actions/workflows/ci.yml/badge.svg)](https://github.com/Vicolet/questa/actions/workflows/ci.yml)
 [![Downloads](https://img.shields.io/crates/d/questa.svg)](https://crates.io/crates/questa)
 [![MSRV](https://img.shields.io/badge/MSRV-1.85-blue)](https://www.rust-lang.org)
 [![License: MIT](https://img.shields.io/crates/l/questa.svg)](LICENSE)
