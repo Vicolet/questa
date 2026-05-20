@@ -35,31 +35,11 @@ Spreadsheets get cluttered. Notion is overkill. A plain JSON file plus a fast TU
 
 ## Demo
 
-```text
-┌─ Tracker │ Total 15 · Active 9 · Interview 1 · ⚠ Overdue 1 · 🔥 This week 3 │ sort: status │ 2026-05-20 ─┐
-│ Active (9)                                                  │ Detail                                       │
-│ ● #1   Acme Robotics       Junior Embedded Engineer  interv │ #1   Acme Robotics                           │
-│   #7   Mistral Robotics    Junior CPS Engineer       offer  │ Junior Embedded Engineer                     │
-│   #6   Quartz Insurance    GRC Analyst               scre…  │ Zurich, Switzerland                          │
-│   #2   Northwind Bank      IT Security Analyst       scre…  │                                              │
-│   #9   Cascade Cloud       Cloud Security Engineer   appli  │ Status     interview                         │
-│   #11  Veridian Health     Information Security…     appli  │ Applied    2026-04-12  (38d ago)             │
-│   #13  Cobalt Defence      AI Research Intern        appli  │ Next       Prepare technical interview ·     │
-│   #3   Helios Labs         Machine Learning Engin…   appli  │            2026-05-21  (1d to go)            │
-│                                                              │ Folder     acme-robotics/junior-embedded-…   │
-│                                                              │                                              │
-│                                                              │ Contacts                                     │
-│                                                              │   2026-04-22 Anna Berger - Talent Acquisi…   │
-│                                                              │   2026-05-02 Mark Steiner - Hiring Manager   │
-│                                                              │                                              │
-│                                                              │ Notes                                        │
-│                                                              │   2026-05-02                                 │
-│                                                              │     Passed recruiter screen. Technical       │
-│                                                              │     interview booked May 22 at 14h, 60       │
-│                                                              │     minutes, video.                          │
-└─────────────────────────────────────────────────────────────┴──────────────────────────────────────────────┘
-  j/k nav · 1-5 filter · o sort · / search · s status · n note · ? help · q quit
-```
+![questa in action](docs/screenshots/demo.gif)
+
+The recording walks through filtering, sorting, fuzzy search, the status picker, adding a note, and the help overlay. The bundled dataset under [`examples/applications.json`](examples/applications.json) is what you see.
+
+> The session was recorded with [VHS](https://github.com/charmbracelet/vhs). The script lives in [`docs/demo.tape`](docs/demo.tape) and can be regenerated with `vhs docs/demo.tape`.
 
 ## Install
 
