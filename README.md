@@ -63,19 +63,19 @@ Spreadsheets get cluttered. Notion is overkill. A plain JSON file plus a fast TU
 
 ## Install
 
-### From source
+```bash
+cargo install questa
+```
+
+That is it. The `questa` binary is now on your `$PATH`. Run it from any directory containing an `applications.json`, or point it at one explicitly:
+
+```bash
+questa --data ~/jobs/applications.json
+```
 
 Requires Rust 1.85+ ([install via rustup](https://www.rust-lang.org/tools/install)).
 
-```bash
-git clone https://github.com/Vicolet/questa.git
-cd questa
-cargo install --path .
-```
-
-`questa` is then available on your `$PATH`.
-
-### Try it without installing
+### Try the demo without installing
 
 ```bash
 git clone https://github.com/Vicolet/questa.git
@@ -84,6 +84,14 @@ cargo run --release
 ```
 
 The bundled demo dataset under `examples/applications.json` is loaded automatically.
+
+### Build from source
+
+```bash
+git clone https://github.com/Vicolet/questa.git
+cd questa
+cargo install --path .
+```
 
 ## Usage
 
