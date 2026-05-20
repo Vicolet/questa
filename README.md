@@ -6,7 +6,6 @@
 
 [![Crates.io](https://img.shields.io/crates/v/questa.svg?logo=rust)](https://crates.io/crates/questa)
 [![Downloads](https://img.shields.io/crates/d/questa.svg)](https://crates.io/crates/questa)
-[![docs.rs](https://img.shields.io/docsrs/questa)](https://docs.rs/questa)
 [![MSRV](https://img.shields.io/badge/MSRV-1.85-blue)](https://www.rust-lang.org)
 [![License: MIT](https://img.shields.io/crates/l/questa.svg)](LICENSE)
 
