@@ -1,0 +1,30 @@
+[package]
+name = "questa"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+description = "A keyboard-driven TUI for tracking your job quest."
+authors = ["Victor Nicolet <nicolet.victor@bluewin.ch>"]
+license = "MIT"
+repository = "https://github.com/Vicolet/questa"
+homepage = "https://github.com/Vicolet/questa"
+documentation = "https://github.com/Vicolet/questa#readme"
+readme = "README.md"
+keywords = ["tui", "ratatui", "job-search", "tracker", "cli"]
+categories = ["command-line-utilities"]
+exclude = ["docs/screenshots/*", "/target"]
+
+[dependencies]
+anyhow = "1"
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+crossterm = "0.28"
+fuzzy-matcher = "0.3"
+ratatui = "0.29"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[profile.release]
+opt-level = 3
+lto = true
+strip = true
+codegen-units = 1

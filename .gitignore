@@ -1,0 +1,7 @@
+/target
+*.swp
+.DS_Store
+
+# Personal data
+applications.json
+!examples/applications.json
