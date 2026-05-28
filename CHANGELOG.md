@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - PDF export (`x`) via Typst: writes paired `.typ` + `.json` (and `.pdf` when `typst` is on PATH) into `<data-dir>/exports/`. The template lives in `templates/export.typ` and is baked into the binary via `include_str!`.
 - Atomic `data::save`: write to a sibling temp file, fsync, then rename into place. A crash mid-write no longer truncates `applications.json`.
+- Full-cursor text editing in every input mode (form fields, note prompt, contact prompt): `←` / `→`, `Home` / `End` (or `^A` / `^E`), word jumps with `^←` / `^→` (or `alt-b` / `alt-f`), `^W` to delete the previous word, `^U` to clear the field, `Delete` for forward delete. A reversed-colour block caret marks the cursor position. Unicode is handled per character, not per byte.
 - Add (`a`), edit (`e`), and delete (`d` with `y`/`n` confirm) applications from the TUI.
 - Undo (`u`) for the last 10 mutations (status change, note, contact, add, edit, delete).
 - Add a contact entry from the TUI (`c`), dated today.

@@ -3,9 +3,11 @@
 mod app;
 mod data;
 mod export;
+mod text;
 mod ui;
 
 use crate::app::{App, Filter, Mode};
+use crate::text::TextAction;
 use anyhow::Result;
 use crossterm::{
     event::{
@@ -126,9 +128,11 @@ fn handle_key(app: &mut App, code: KeyCode, mods: KeyModifiers) {
             match code {
                 KeyCode::Esc => app.note_cancel(),
                 KeyCode::Enter => app.note_confirm(),
-                KeyCode::Backspace => app.note_pop(),
-                KeyCode::Char(c) if !mods.contains(KeyModifiers::CONTROL) => app.note_push(c),
-                _ => {}
+                _ => {
+                    if let Some(action) = text_action_for(code, mods) {
+                        app.apply_text_action(action);
+                    }
+                }
             }
             return;
         }
@@ -136,9 +140,11 @@ fn handle_key(app: &mut App, code: KeyCode, mods: KeyModifiers) {
             match code {
                 KeyCode::Esc => app.contact_cancel(),
                 KeyCode::Enter => app.contact_confirm(),
-                KeyCode::Backspace => app.contact_pop(),
-                KeyCode::Char(c) if !mods.contains(KeyModifiers::CONTROL) => app.contact_push(c),
-                _ => {}
+                _ => {
+                    if let Some(action) = text_action_for(code, mods) {
+                        app.apply_text_action(action);
+                    }
+                }
             }
             return;
         }
@@ -149,9 +155,11 @@ fn handle_key(app: &mut App, code: KeyCode, mods: KeyModifiers) {
                 KeyCode::Char('s') if mods.contains(KeyModifiers::CONTROL) => app.form_save(),
                 KeyCode::Tab | KeyCode::Down => app.form_focus_next(),
                 KeyCode::BackTab | KeyCode::Up => app.form_focus_prev(),
-                KeyCode::Backspace => app.form_pop(),
-                KeyCode::Char(c) if !mods.contains(KeyModifiers::CONTROL) => app.form_push(c),
-                _ => {}
+                _ => {
+                    if let Some(action) = text_action_for(code, mods) {
+                        app.apply_text_action(action);
+                    }
+                }
             }
             return;
         }
@@ -193,6 +201,34 @@ fn handle_key(app: &mut App, code: KeyCode, mods: KeyModifiers) {
         KeyCode::Char('x') => app.export_typst(),
         KeyCode::Char('?') => app.toggle_help(),
         _ => {}
+    }
+}
+
+/// Map a key chord to a [`TextAction`] suitable for any single-line text
+/// input (form field, note prompt, contact prompt). Returns `None` for
+/// keys with no editing meaning so the per-mode dispatcher can decide
+/// whether to ignore them.
+///
+/// Bindings follow the readline / Emacs conventions most TUI users
+/// already know: Ctrl-A/E for home/end, Ctrl-W to delete the previous
+/// word, Ctrl-U to clear the line, Ctrl-Left/Right (or Alt-B/F) to jump
+/// by word.
+fn text_action_for(code: KeyCode, mods: KeyModifiers) -> Option<TextAction> {
+    let ctrl = mods.contains(KeyModifiers::CONTROL);
+    let alt = mods.contains(KeyModifiers::ALT);
+    match (code, ctrl, alt) {
+        (KeyCode::Left, true, _) | (KeyCode::Char('b'), _, true) => Some(TextAction::WordLeft),
+        (KeyCode::Right, true, _) | (KeyCode::Char('f'), _, true) => Some(TextAction::WordRight),
+        (KeyCode::Left, false, false) => Some(TextAction::Left),
+        (KeyCode::Right, false, false) => Some(TextAction::Right),
+        (KeyCode::Home, ..) | (KeyCode::Char('a'), true, _) => Some(TextAction::Home),
+        (KeyCode::End, ..) | (KeyCode::Char('e'), true, _) => Some(TextAction::End),
+        (KeyCode::Backspace, ..) => Some(TextAction::Backspace),
+        (KeyCode::Delete, ..) => Some(TextAction::Delete),
+        (KeyCode::Char('w'), true, _) => Some(TextAction::DeleteWordBack),
+        (KeyCode::Char('u'), true, _) => Some(TextAction::Clear),
+        (KeyCode::Char(c), false, false) => Some(TextAction::Insert(c)),
+        _ => None,
     }
 }
 

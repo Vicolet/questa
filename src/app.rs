@@ -1,6 +1,7 @@
 //! Application state: filtering, navigation, search, mutation.
 
 use crate::data::{self, Application, Contact, Note, Tracker};
+use crate::text::{TextAction, TextBuf};
 use anyhow::Result;
 use fuzzy_matcher::FuzzyMatcher;
 use fuzzy_matcher::skim::SkimMatcherV2;
@@ -110,8 +111,8 @@ pub enum Mode {
     Search,
     Help,
     StatusPicker { idx: usize },
-    NoteInput { buffer: String },
-    ContactInput { buffer: String },
+    NoteInput { buffer: TextBuf },
+    ContactInput { buffer: TextBuf },
     Form(AppForm),
     ConfirmDelete { id: u32, label: String },
 }
@@ -136,7 +137,7 @@ pub enum FieldKey {
 pub struct FormField {
     pub key: FieldKey,
     pub label: &'static str,
-    pub value: String,
+    pub value: TextBuf,
 }
 
 #[derive(Debug, Clone)]
@@ -149,38 +150,38 @@ pub struct AppForm {
 }
 
 impl AppForm {
-    fn new_empty(applied_default: String) -> Self {
+    fn new_empty(applied_default: TextBuf) -> Self {
         Self {
             fields: vec![
                 FormField {
                     key: FieldKey::Company,
                     label: "Company *",
-                    value: String::new(),
+                    value: TextBuf::new(),
                 },
                 FormField {
                     key: FieldKey::Position,
                     label: "Position *",
-                    value: String::new(),
+                    value: TextBuf::new(),
                 },
                 FormField {
                     key: FieldKey::Location,
                     label: "Location",
-                    value: String::new(),
+                    value: TextBuf::new(),
                 },
                 FormField {
                     key: FieldKey::Type,
                     label: "Type",
-                    value: String::new(),
+                    value: TextBuf::new(),
                 },
                 FormField {
                     key: FieldKey::Ref,
                     label: "Ref",
-                    value: String::new(),
+                    value: TextBuf::new(),
                 },
                 FormField {
                     key: FieldKey::Url,
                     label: "URL",
-                    value: String::new(),
+                    value: TextBuf::new(),
                 },
                 FormField {
                     key: FieldKey::AppliedDate,
@@ -190,27 +191,27 @@ impl AppForm {
                 FormField {
                     key: FieldKey::Deadline,
                     label: "Deadline",
-                    value: String::new(),
+                    value: TextBuf::new(),
                 },
                 FormField {
                     key: FieldKey::Folder,
                     label: "Folder",
-                    value: String::new(),
+                    value: TextBuf::new(),
                 },
                 FormField {
                     key: FieldKey::Status,
                     label: "Status",
-                    value: "applied".into(),
+                    value: TextBuf::from("applied"),
                 },
                 FormField {
                     key: FieldKey::NextAction,
                     label: "Next action",
-                    value: String::new(),
+                    value: TextBuf::new(),
                 },
                 FormField {
                     key: FieldKey::NextActionDate,
                     label: "Next date",
-                    value: String::new(),
+                    value: TextBuf::new(),
                 },
             ],
             focus: 0,
@@ -220,10 +221,10 @@ impl AppForm {
     }
 
     fn from_application(app: &Application) -> Self {
-        let mut f = Self::new_empty(app.applied_date.clone().unwrap_or_default());
+        let mut f = Self::new_empty(TextBuf::from(app.applied_date.clone().unwrap_or_default()));
         f.edit_target_id = Some(app.id);
         for field in f.fields.iter_mut() {
-            field.value = match field.key {
+            let s: String = match field.key {
                 FieldKey::Company => app.company.clone(),
                 FieldKey::Position => app.position.clone(),
                 FieldKey::Location => app.location.clone().unwrap_or_default(),
@@ -237,25 +238,25 @@ impl AppForm {
                 FieldKey::NextAction => app.next_action.clone().unwrap_or_default(),
                 FieldKey::NextActionDate => app.next_action_date.clone().unwrap_or_default(),
             };
+            field.value = TextBuf::from(s);
         }
         f
     }
 
-    fn get(&self, key: FieldKey) -> &str {
+    /// Trimmed text content of the requested field. Returns an empty
+    /// string when the field is missing (cannot happen in practice — all
+    /// `FieldKey` variants are inserted by `new_empty`).
+    fn get(&self, key: FieldKey) -> String {
         self.fields
             .iter()
             .find(|f| f.key == key)
-            .map(|f| f.value.trim())
-            .unwrap_or("")
+            .map(|f| f.value.as_string().trim().to_string())
+            .unwrap_or_default()
     }
 
     fn opt(&self, key: FieldKey) -> Option<String> {
         let v = self.get(key);
-        if v.is_empty() {
-            None
-        } else {
-            Some(v.to_string())
-        }
+        if v.is_empty() { None } else { Some(v) }
     }
 
     fn validate(&self) -> Result<(), String> {
@@ -266,7 +267,7 @@ impl AppForm {
             return Err("Position is required".into());
         }
         let status = self.get(FieldKey::Status);
-        if !STATUSES.contains(&status) {
+        if !STATUSES.contains(&status.as_str()) {
             return Err(format!("Status must be one of: {}", STATUSES.join(", ")));
         }
         for (key, label) in [
@@ -275,7 +276,7 @@ impl AppForm {
             (FieldKey::NextActionDate, "Next date"),
         ] {
             let v = self.get(key);
-            if !v.is_empty() && chrono::NaiveDate::parse_from_str(v, "%Y-%m-%d").is_err() {
+            if !v.is_empty() && chrono::NaiveDate::parse_from_str(&v, "%Y-%m-%d").is_err() {
                 return Err(format!("{label} must be YYYY-MM-DD"));
             }
         }
@@ -500,27 +501,15 @@ impl App {
             return;
         }
         self.mode = Mode::NoteInput {
-            buffer: String::new(),
+            buffer: TextBuf::new(),
         };
-    }
-
-    pub fn note_push(&mut self, c: char) {
-        if let Mode::NoteInput { buffer } = &mut self.mode {
-            buffer.push(c);
-        }
-    }
-
-    pub fn note_pop(&mut self) {
-        if let Mode::NoteInput { buffer } = &mut self.mode {
-            buffer.pop();
-        }
     }
 
     pub fn note_confirm(&mut self) {
         let Mode::NoteInput { buffer } = &self.mode else {
             return;
         };
-        let text = buffer.trim().to_string();
+        let text = buffer.as_string().trim().to_string();
         if text.is_empty() {
             self.mode = Mode::Normal;
             return;
@@ -554,27 +543,15 @@ impl App {
             return;
         }
         self.mode = Mode::ContactInput {
-            buffer: String::new(),
+            buffer: TextBuf::new(),
         };
-    }
-
-    pub fn contact_push(&mut self, c: char) {
-        if let Mode::ContactInput { buffer } = &mut self.mode {
-            buffer.push(c);
-        }
-    }
-
-    pub fn contact_pop(&mut self) {
-        if let Mode::ContactInput { buffer } = &mut self.mode {
-            buffer.pop();
-        }
     }
 
     pub fn contact_confirm(&mut self) {
         let Mode::ContactInput { buffer } = &self.mode else {
             return;
         };
-        let info = buffer.trim().to_string();
+        let info = buffer.as_string().trim().to_string();
         if info.is_empty() {
             self.mode = Mode::Normal;
             return;
@@ -606,7 +583,7 @@ impl App {
     // ── Form mode (add / edit) ─────────────────────────────────────────────
 
     pub fn open_add_form(&mut self) {
-        let form = AppForm::new_empty(data::today_str());
+        let form = AppForm::new_empty(TextBuf::from(data::today_str()));
         self.mode = Mode::Form(form);
     }
 
@@ -635,22 +612,29 @@ impl App {
         }
     }
 
-    pub fn form_push(&mut self, c: char) {
-        if let Mode::Form(f) = &mut self.mode {
-            if let Some(field) = f.fields.get_mut(f.focus) {
-                field.value.push(c);
-            }
-            f.error = None;
+    /// Mutable view of the text buffer for whichever input-style mode
+    /// is currently active. `None` outside of those modes.
+    pub fn current_text_buf_mut(&mut self) -> Option<&mut TextBuf> {
+        match &mut self.mode {
+            Mode::NoteInput { buffer } | Mode::ContactInput { buffer } => Some(buffer),
+            Mode::Form(form) => form.fields.get_mut(form.focus).map(|f| &mut f.value),
+            _ => None,
         }
     }
 
-    pub fn form_pop(&mut self) {
-        if let Mode::Form(f) = &mut self.mode {
-            if let Some(field) = f.fields.get_mut(f.focus) {
-                field.value.pop();
-            }
-            f.error = None;
+    /// Apply a single text-editing action to the focused buffer. Returns
+    /// `true` if the action was consumed (i.e. a buffer was present).
+    pub fn apply_text_action(&mut self, action: TextAction) -> bool {
+        let Some(buf) = self.current_text_buf_mut() else {
+            return false;
+        };
+        buf.apply(action);
+        // Any keystroke in a form field invalidates the displayed
+        // validation error so the user can correct without confusion.
+        if let Mode::Form(form) = &mut self.mode {
+            form.error = None;
         }
+        true
     }
 
     pub fn form_cancel(&mut self) {
@@ -1446,7 +1430,7 @@ mod tests {
         app.selected = 0;
         app.open_note_input();
         for c in "hello".chars() {
-            app.note_push(c);
+            app.apply_text_action(TextAction::Insert(c));
         }
         app.note_confirm();
         assert_eq!(app.tracker.applications[0].notes.len(), 1);
@@ -1495,7 +1479,7 @@ mod tests {
         app.selected = 0;
         app.open_contact_input();
         for c in "Alice".chars() {
-            app.contact_push(c);
+            app.apply_text_action(TextAction::Insert(c));
         }
         app.contact_confirm();
         assert!(matches!(app.mode, Mode::Normal));
@@ -1521,7 +1505,7 @@ mod tests {
         app.selected = 0;
         app.open_contact_input();
         for c in "Bob".chars() {
-            app.contact_push(c);
+            app.apply_text_action(TextAction::Insert(c));
         }
         app.contact_cancel();
         assert!(app.tracker.applications[0].contacts.is_empty());
@@ -1575,19 +1559,45 @@ mod tests {
     }
 
     #[test]
-    fn form_push_pop_edits_focused_field() {
+    fn form_text_actions_edit_focused_field() {
         let (mut app, _f) = make_app();
         app.open_add_form();
-        // focus is on Company (index 0)
-        app.form_push('A');
-        app.form_push('B');
-        app.form_push('C');
-        if let Mode::Form(f) = &app.mode {
-            assert_eq!(f.fields[0].value, "ABC");
+        // Focus starts on Company (index 0).
+        for c in "ABC".chars() {
+            app.apply_text_action(TextAction::Insert(c));
         }
-        app.form_pop();
         if let Mode::Form(f) = &app.mode {
-            assert_eq!(f.fields[0].value, "AB");
+            assert_eq!(f.fields[0].value.as_string(), "ABC");
+            assert_eq!(f.fields[0].value.cursor(), 3);
+        } else {
+            panic!("expected Form mode");
         }
+        app.apply_text_action(TextAction::Backspace);
+        app.apply_text_action(TextAction::Home);
+        app.apply_text_action(TextAction::Insert('Z'));
+        if let Mode::Form(f) = &app.mode {
+            assert_eq!(f.fields[0].value.as_string(), "ZAB");
+            assert_eq!(f.fields[0].value.cursor(), 1);
+        }
+    }
+
+    #[test]
+    fn form_word_delete_back_strips_one_word() {
+        let (mut app, _f) = make_app();
+        app.open_add_form();
+        for c in "hello world".chars() {
+            app.apply_text_action(TextAction::Insert(c));
+        }
+        app.apply_text_action(TextAction::DeleteWordBack);
+        if let Mode::Form(f) = &app.mode {
+            assert_eq!(f.fields[0].value.as_string(), "hello ");
+        }
+    }
+
+    #[test]
+    fn apply_text_action_returns_false_outside_input_modes() {
+        let (mut app, _f) = make_app();
+        // Normal mode — no buffer to write into.
+        assert!(!app.apply_text_action(TextAction::Insert('x')));
     }
 }

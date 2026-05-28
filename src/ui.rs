@@ -2,6 +2,7 @@
 
 use crate::app::{App, AppForm, Mode, STATUSES};
 use crate::data;
+use crate::text::TextBuf;
 use ratatui::{
     Frame,
     layout::{Alignment, Constraint, Direction, Layout, Rect},
@@ -402,16 +403,19 @@ fn draw_statusbar(f: &mut Frame, app: &App, area: Rect) {
             "  j/k select  ·  enter confirm  ·  esc cancel",
             Style::default().fg(Color::DarkGray),
         )),
-        Mode::NoteInput { buffer } => Line::from(vec![
-            Span::styled("note> ", Style::default().fg(ACCENT).bold()),
-            Span::raw(buffer.clone()),
-            Span::styled("_", Style::default().fg(Color::DarkGray)),
-        ]),
-        Mode::ContactInput { buffer } => Line::from(vec![
-            Span::styled("contact> ", Style::default().fg(ACCENT).bold()),
-            Span::raw(buffer.clone()),
-            Span::styled("_", Style::default().fg(Color::DarkGray)),
-        ]),
+        Mode::NoteInput { buffer } => {
+            let mut spans = vec![Span::styled("note> ", Style::default().fg(ACCENT).bold())];
+            spans.extend(textbuf_spans(buffer, true, Color::White));
+            Line::from(spans)
+        }
+        Mode::ContactInput { buffer } => {
+            let mut spans = vec![Span::styled(
+                "contact> ",
+                Style::default().fg(ACCENT).bold(),
+            )];
+            spans.extend(textbuf_spans(buffer, true, Color::White));
+            Line::from(spans)
+        }
         Mode::Form(_) => Line::from(Span::styled(
             "  tab/↓ next · shift-tab/↑ prev · enter save · esc cancel",
             Style::default().fg(Color::DarkGray),
@@ -498,6 +502,14 @@ fn draw_help_overlay(f: &mut Frame, area: Rect) {
         help_line("n", "add a note (today's date)"),
         help_line("c", "add a contact (today's date)"),
         Line::raw(""),
+        section_title("Text input"),
+        help_line("← / →", "move cursor"),
+        help_line("home/end", "jump to start / end (also ^A / ^E)"),
+        help_line("^← / ^→", "jump by word (also alt-b / alt-f)"),
+        help_line("^W", "delete previous word"),
+        help_line("^U", "clear field"),
+        help_line("del", "delete forward"),
+        Line::raw(""),
         section_title("General"),
         help_line("?", "toggle this help"),
         help_line("q / esc", "quit"),
@@ -573,6 +585,35 @@ fn draw_confirm_delete(f: &mut Frame, area: Rect, label: &str) {
     );
 }
 
+/// Render a `TextBuf` as inline `Span`s, drawing a reversed-colour block
+/// cursor at the current position when `focused` is true. The cursor is
+/// painted over the character at the cursor — readline / Emacs style —
+/// or over a trailing space if the cursor sits past the last character.
+fn textbuf_spans(buf: &TextBuf, focused: bool, text_color: Color) -> Vec<Span<'static>> {
+    let s = buf.as_string();
+    if !focused {
+        return vec![Span::styled(s, Style::default().fg(text_color))];
+    }
+    let chars: Vec<char> = s.chars().collect();
+    let cursor = buf.cursor().min(chars.len());
+    let before: String = chars[..cursor].iter().collect();
+    let (at, after) = if cursor < chars.len() {
+        let at = chars[cursor].to_string();
+        let after: String = chars[cursor + 1..].iter().collect();
+        (at, after)
+    } else {
+        (" ".to_string(), String::new())
+    };
+    let cursor_style = Style::default()
+        .fg(text_color)
+        .add_modifier(Modifier::REVERSED);
+    vec![
+        Span::styled(before, Style::default().fg(text_color)),
+        Span::styled(at, cursor_style),
+        Span::styled(after, Style::default().fg(text_color)),
+    ]
+}
+
 fn draw_form(f: &mut Frame, area: Rect, form: &AppForm) {
     let popup = centered_rect(70, 90, area);
     f.render_widget(Clear, popup);
@@ -609,22 +650,17 @@ fn draw_form(f: &mut Frame, area: Rect, form: &AppForm) {
         } else {
             Style::default().fg(Color::DarkGray)
         };
-        let value_style = if is_focus {
-            Style::default().fg(Color::White)
-        } else {
-            Style::default().fg(Color::Gray)
-        };
+        let value_color = if is_focus { Color::White } else { Color::Gray };
         let arrow = if is_focus { "▶ " } else { "  " };
-        let cursor = if is_focus { "_" } else { "" };
-        lines.push(Line::from(vec![
+        let mut spans = vec![
             Span::styled(arrow.to_string(), Style::default().fg(ACCENT)),
             Span::styled(
                 format!("{:<width$} ", field.label, width = label_w),
                 label_style,
             ),
-            Span::styled(field.value.clone(), value_style),
-            Span::styled(cursor.to_string(), Style::default().fg(Color::DarkGray)),
-        ]));
+        ];
+        spans.extend(textbuf_spans(&field.value, is_focus, value_color));
+        lines.push(Line::from(spans));
     }
     f.render_widget(Paragraph::new(lines).wrap(Wrap { trim: false }), chunks[0]);
 
@@ -644,7 +680,7 @@ fn draw_form(f: &mut Frame, area: Rect, form: &AppForm) {
     f.render_widget(Paragraph::new(footer), chunks[1]);
 }
 
-fn draw_text_input(f: &mut Frame, area: Rect, title: &str, buffer: &str) {
+fn draw_text_input(f: &mut Frame, area: Rect, title: &str, buffer: &TextBuf) {
     let popup = centered_rect(60, 20, area);
     f.render_widget(Clear, popup);
 
@@ -656,17 +692,16 @@ fn draw_text_input(f: &mut Frame, area: Rect, title: &str, buffer: &str) {
     let inner = block.inner(popup);
     f.render_widget(block, popup);
 
+    let mut prompt_spans = vec![Span::styled("> ", Style::default().fg(ACCENT).bold())];
+    prompt_spans.extend(textbuf_spans(buffer, true, Color::White));
+
     let lines = vec![
         Line::from(Span::styled(
             format!("Date: {}", data::today_str()),
             Style::default().fg(Color::DarkGray),
         )),
         Line::raw(""),
-        Line::from(vec![
-            Span::styled("> ", Style::default().fg(ACCENT).bold()),
-            Span::raw(buffer.to_string()),
-            Span::styled("_", Style::default().fg(Color::DarkGray)),
-        ]),
+        Line::from(prompt_spans),
         Line::raw(""),
         Line::from(Span::styled(
             "  enter save · esc cancel",
