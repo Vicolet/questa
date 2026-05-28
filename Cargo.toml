@@ -1,18 +1,18 @@
 [package]
 name = "questa"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 rust-version = "1.85"
-description = "A keyboard-driven TUI for tracking your job quest."
+description = "A keyboard-driven TUI for tracking your job applications, with PDF export via Typst."
 authors = ["Vicolet <victor.nicolet@heig-vd.ch>"]
 license = "MIT"
 repository = "https://github.com/Vicolet/questa"
 homepage = "https://github.com/Vicolet/questa"
 documentation = "https://github.com/Vicolet/questa#readme"
 readme = "README.md"
-keywords = ["tui", "ratatui", "job-search", "tracker", "cli"]
+keywords = ["tui", "ratatui", "job-search", "tracker", "typst"]
 categories = ["command-line-utilities"]
-exclude = ["docs/screenshots/*", "/target"]
+exclude = ["docs/screenshots/*", "/target", "/tests", "/exports"]
 
 [dependencies]
 anyhow = "1"
