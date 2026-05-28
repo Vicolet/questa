@@ -5,3 +5,6 @@
 # Personal data
 applications.json
 !examples/applications.json
+
+# Generated PDF / Typst / JSON exports
+exports/

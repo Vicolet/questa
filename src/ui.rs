@@ -487,6 +487,7 @@ fn draw_help_overlay(f: &mut Frame, area: Rect) {
         section_title("Open"),
         help_line("O", "open folder in file manager"),
         help_line("U", "open url in browser"),
+        help_line("x", "export current view to PDF (typst)"),
         Line::raw(""),
         section_title("Edit"),
         help_line("a", "add a new application"),

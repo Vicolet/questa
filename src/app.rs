@@ -870,14 +870,38 @@ impl App {
         }
     }
 
+    // ── Export ─────────────────────────────────────────────────────────────
+
+    /// Render the currently filtered applications to
+    /// `<data-dir>/exports/questa-<timestamp>.{typ,json,pdf}` via
+    /// [`crate::export`]. The `.typ` and `.json` are always written; the
+    /// `.pdf` is only produced when the `typst` binary is on PATH.
+    pub fn export_typst(&mut self) {
+        let data_dir = self
+            .data_path
+            .parent()
+            .unwrap_or_else(|| Path::new("."))
+            .to_path_buf();
+        match crate::export::export(&self.tracker, self.filter, &data_dir) {
+            Ok(result) => self.flash = Some(format_export_result(&result)),
+            Err(e) => self.error = Some(format!("export failed: {e}")),
+        }
+    }
+
     // ── Dashboard stats ────────────────────────────────────────────────────
 
     pub fn counts(&self) -> Counts {
+        Counts::from_tracker(&self.tracker)
+    }
+}
+
+impl Counts {
+    pub fn from_tracker(tracker: &Tracker) -> Self {
         let mut c = Counts {
-            total: self.tracker.applications.len(),
+            total: tracker.applications.len(),
             ..Default::default()
         };
-        for a in &self.tracker.applications {
+        for a in &tracker.applications {
             match a.status.as_str() {
                 "applied" | "screening" | "interview" | "technical" | "offer" => c.active += 1,
                 "rejected" => c.rejected += 1,
@@ -904,6 +928,31 @@ impl App {
             }
         }
         c
+    }
+}
+
+fn format_export_result(r: &crate::export::ExportResult) -> String {
+    use crate::export::TypstStatus;
+    let display = |p: &Path| {
+        p.file_name()
+            .map(|n| n.to_string_lossy().to_string())
+            .unwrap_or_else(|| p.display().to_string())
+    };
+    match &r.status {
+        TypstStatus::Compiled => format!(
+            "exported {}",
+            r.pdf_path
+                .as_deref()
+                .map(display)
+                .unwrap_or_else(|| display(&r.typ_path))
+        ),
+        TypstStatus::NotInstalled => format!(
+            "wrote {} (install typst to render PDF)",
+            display(&r.typ_path)
+        ),
+        TypstStatus::CompileFailed(msg) => {
+            format!("wrote {} (typst failed: {})", display(&r.typ_path), msg)
+        }
     }
 }
 

@@ -2,6 +2,7 @@
 
 mod app;
 mod data;
+mod export;
 mod ui;
 
 use crate::app::{App, Filter, Mode};
@@ -189,6 +190,7 @@ fn handle_key(app: &mut App, code: KeyCode, mods: KeyModifiers) {
         KeyCode::Char('e') => app.open_edit_form(),
         KeyCode::Char('d') => app.open_delete_confirm(),
         KeyCode::Char('u') => app.undo(),
+        KeyCode::Char('x') => app.export_typst(),
         KeyCode::Char('?') => app.toggle_help(),
         _ => {}
     }

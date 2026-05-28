@@ -143,6 +143,7 @@ questa --version
 | `c` | add a contact (text field, dated today on save)              |
 | `O` | open the selected application's `folder` in the system file manager |
 | `U` | open the selected application's `url` in the default browser |
+| `x` | export the current view to PDF (writes `.typ` + `.json` + `.pdf`)  |
 
 Mutations write to `applications.json` immediately.
 
@@ -210,6 +211,28 @@ Mutations write to `applications.json` immediately.
 
 When sorting by status, the order is `interview > technical > offer > screening > applied > accepted > withdrawn > rejected > ghosted`.
 
+## PDF export
+
+Press `x` to export the currently filtered applications. Questa writes
+three files into a sibling `exports/` directory next to your data file:
+
+```
+<data-dir>/exports/
+├── questa-YYYYMMDD-HHMMSS.json   # the data this export was built from
+├── questa-YYYYMMDD-HHMMSS.typ    # the Typst template, references the json
+└── questa-YYYYMMDD-HHMMSS.pdf    # produced if `typst` is on PATH
+```
+
+The PDF holds a cover page with stats, a summary table, and one detail
+card per application. If `typst` is not installed the `.typ` and `.json`
+are still written and you get a flash message telling you to run
+`typst compile <file>.typ` yourself. Install Typst from
+<https://typst.app> or `cargo install typst-cli`.
+
+The template can be hand-edited — colours, fonts, page size, layout —
+and re-compiled without touching questa. Data and presentation are kept
+in separate files on purpose.
+
 ## Development
 
 ```bash
@@ -227,7 +250,11 @@ src/
 ├── main.rs   # entry point, terminal lifecycle, key dispatch
 ├── data.rs   # serde structs + JSON load/save + date helpers
 ├── app.rs    # state machine: filter, sort, mode, mutations
-└── ui.rs     # ratatui rendering: header, table, detail, overlays
+├── ui.rs     # ratatui rendering: header, table, detail, overlays
+└── export.rs # data + template generation for the PDF export
+
+templates/
+└── export.typ  # Typst document, baked into the binary via include_str!
 ```
 
 ## Roadmap

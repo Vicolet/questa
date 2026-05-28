@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- PDF export (`x`) via Typst: writes paired `.typ` + `.json` (and `.pdf` when `typst` is on PATH) into `<data-dir>/exports/`. The template lives in `templates/export.typ` and is baked into the binary via `include_str!`.
+- Atomic `data::save`: write to a sibling temp file, fsync, then rename into place. A crash mid-write no longer truncates `applications.json`.
 - Add (`a`), edit (`e`), and delete (`d` with `y`/`n` confirm) applications from the TUI.
 - Undo (`u`) for the last 10 mutations (status change, note, contact, add, edit, delete).
 - Add a contact entry from the TUI (`c`), dated today.
