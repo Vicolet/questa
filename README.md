@@ -26,12 +26,16 @@ Spreadsheets get cluttered. Notion is overkill. A plain JSON file plus a fast TU
 
 - **Fast** — single static binary, sub-50 ms startup.
 - **Keyboard-driven** — vim-style navigation, no mouse required.
+- **Full CRUD in-app** — add (`a`), edit (`e`), delete (`d` with confirm), undo (`u`, last 10 mutations). No need to hand-edit JSON.
 - **Filter** — instantly switch between *all*, *active*, *interview*, *rejected*, *ghosted*.
 - **Sort** — by date desc, by status priority (interviews first), or by company.
 - **Fuzzy search** — match across company name and position title.
-- **Edit in place** — change status from a picker, append notes dated today.
+- **Cursor-aware text editing** — readline-style keys (`←`/`→`, `Home`/`End`, `^A`/`^E`, `^W`, `^U`, word jumps), Unicode-correct.
 - **Visible signals** — overdue follow-ups marked with `⚠`, upcoming actions counted in the header.
+- **PDF export** — press `x` to render the current view through Typst (`.typ` + `.json` + `.pdf`).
+- **Atomic saves** — writes go through `tmp + fsync + rename`; a crash never truncates your data.
 - **Portable data** — your applications live in a plain JSON file. No database, no cloud.
+- **Observable** — structured logs at `$XDG_STATE_HOME/questa/questa.log` (`RUST_LOG`-tunable).
 
 ## Demo
 
@@ -275,11 +279,13 @@ templates/
 
 ## Roadmap
 
-- `o` open folder of the selected application in `$FILE_MANAGER` / `xdg-open`
-- `e` edit `next_action` and `next_action_date` from the TUI
 - Sort by deadline and by next-action date
-- Configurable colour theme via `~/.config/questa/theme.toml`
-- Optional JSON schema validation on load
+- Per-note delete / edit from the TUI (currently only append + view)
+- Scroll the detail panel to see notes beyond the last 8
+- Configurable colour theme via `$XDG_CONFIG_HOME/questa/theme.toml`
+- Optional JSON-schema validation on load
+- Reusable Typst templates under `$XDG_CONFIG_HOME/questa/templates/` so
+  users can override the bundled export without forking
 
 Contributions and feature suggestions welcome via GitHub issues.
 

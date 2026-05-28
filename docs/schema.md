@@ -2,44 +2,48 @@
 
 `applications.json` is the single source of truth. This document lists every
 field, what it is for, where it shows up in the UI, and how the user can edit
-it today. It also flags gaps that the application should close.
+it. Compatibility rules and migration history live at the bottom.
 
 The top-level shape is:
 
 ```json
 {
   "applications": [ Application, ... ],
-  "_meta": { "next_id": 16, "version": "1.0" }
+  "_meta": { "next_id": 16, "version": "2" }
 }
 ```
 
-## Field audit
+## Field reference
 
 Legend for **Edit**:
+
 - `auto` — set by the app, never typed by the user
-- `key:X` — current keyboard shortcut in the TUI
-- `JSON` — only editable by hand-editing the file
-- `form` — planned: editable through the add/edit form (not yet implemented)
+- `key:X` — direct keyboard shortcut in the TUI
+- `form` — editable through the add (`a`) / edit (`e`) form
 
-| Field | Type | Required | Shown in detail | Edit today | Edit target |
-|---|---|---|---|---|---|
-| `id` | `u32` | yes | yes (`#id`) | auto | auto (from `_meta.next_id`) |
-| `company` | string | yes | yes | JSON | `form` |
-| `position` | string | yes | yes | JSON | `form` |
-| `location` | string? | no | yes | JSON | `form` |
-| `type` | string? | no | yes | JSON | `form` |
-| `ref` | string? | no | yes (if non-empty) | JSON | `form` |
-| `url` | string? | no | **no** | JSON | `form` + `key:U` to open in browser |
-| `applied_date` | `YYYY-MM-DD`? | no | yes (`+ relative`) | JSON | `form` (defaults to today on add) |
-| `deadline` | `YYYY-MM-DD`? | no | yes | JSON | `form` |
-| `folder` | string? | no | yes | JSON (`key:O` opens it) | `form` |
-| `status` | string (enum) | yes | yes | `key:s` | `key:s` (kept) |
-| `contacts` | `[Contact]` | no | yes (all) | JSON | `key:c` to append |
-| `notes` | `[Note]` | no | yes (last 8, reverse) | `key:n` to append | `key:n` (kept) + scroll for older notes |
-| `next_action` | string? | no | yes | JSON | `form` |
-| `next_action_date` | `YYYY-MM-DD`? | no | yes (`+ overdue/3d/today`) | JSON | `form` |
+| Field              | Type            | Required | Shown in detail            | Edit             |
+|--------------------|-----------------|----------|----------------------------|------------------|
+| `id`               | `u32`           | yes      | yes (`#id`)                | `auto` from `_meta.next_id` |
+| `company`          | string          | yes      | yes                        | `form`           |
+| `position`         | string          | yes      | yes                        | `form`           |
+| `location`         | string?         | no       | yes                        | `form`           |
+| `type`             | string?         | no       | yes                        | `form`           |
+| `ref`              | string?         | no       | yes (if non-empty)         | `form`           |
+| `url`              | string?         | no       | yes (if non-empty)         | `form` · `key:U` to open in browser |
+| `applied_date`     | `YYYY-MM-DD`?   | no       | yes (`+ relative`)         | `form` (defaults to today on add) |
+| `deadline`         | `YYYY-MM-DD`?   | no       | yes                        | `form`           |
+| `folder`           | string?         | no       | yes                        | `form` · `key:O` opens in file manager |
+| `status`           | string (enum)   | yes      | yes                        | `key:s` (picker) or `form` |
+| `contacts`         | `[Contact]`     | no       | yes (all)                  | `key:c` appends a contact dated today |
+| `notes`            | `[Note]`        | no       | yes (last 8, reverse)      | `key:n` appends a note dated today |
+| `next_action`      | string?         | no       | yes                        | `form`           |
+| `next_action_date` | `YYYY-MM-DD`?   | no       | yes (`+ overdue/3d/today`) | `form`           |
 
-### Status enum
+Every field is editable from the TUI — there is no need to hand-edit
+`applications.json`. The form validates required fields (`company`,
+`position`), the `status` enum, and `YYYY-MM-DD` shape on all date fields.
+
+## Status enum
 
 `status` is a string but only nine values are recognised. Anything else falls
 back to a default colour and a sort priority of `99` (i.e. last).
@@ -49,74 +53,45 @@ back to a default colour and a sort priority of `99` (i.e. last).
 | `applied` | active | 4 | Application submitted, no reply yet |
 | `screening` | active | 3 | Recruiter screen scheduled or in progress |
 | `interview` | active, interview | 0 | Behavioural / hiring-manager round |
-| `technical` | active, interview | 1 | Technical round (live coding, take-home, ...) |
+| `technical` | active, interview | 1 | Technical round (live coding, take-home, …) |
 | `offer` | active | 2 | Offer received, deciding |
 | `accepted` | — | 5 | Offer accepted |
 | `rejected` | rejected | 7 | Rejected by the company |
 | `withdrawn` | — | 6 | User withdrew |
 | `ghosted` | ghosted | 8 | No reply after follow-ups |
 
-### Nested types
+## Nested types
 
 ```rust
 Contact { date: YYYY-MM-DD, info: String }
 Note    { date: YYYY-MM-DD, text: String }
 ```
 
-Dates are stored as ISO `YYYY-MM-DD` strings. Anything that does not parse is
-displayed verbatim but treated as "no date" by the relative-date and overdue
-helpers.
+Dates are stored as ISO `YYYY-MM-DD` strings. A value that does not parse is
+displayed verbatim but is treated as "no date" by the relative-date and
+overdue helpers.
 
-## Gaps and decisions
+## Persistence guarantees
 
-This is the honest list of what is broken or inconsistent today. The friend's
-feedback that "not all fields seem to be used" maps to the rows below.
+- **Atomic writes.** Saves go to a sibling `.tmp` file, are fsynced, then
+  renamed into place. A crash mid-write never leaves `applications.json`
+  truncated.
+- **Undo history.** Every mutation pushes the pre-mutation tracker onto an
+  in-memory stack capped at 10. `u` pops the most recent snapshot and writes
+  the previous state back.
 
-### 1. `salary` is dead — drop it
+## Migrations
 
-- Declared as `Option<serde_json::Value>` (accepts anything).
-- Never displayed in the UI.
-- Never editable.
-- Zero out of 15 entries in `examples/applications.json` set a non-null value.
+`_meta.version` records the on-disk schema version. The current version is
+`"2"`. On load, questa reads the version, applies any migrations in order,
+and writes back the latest version on the next save.
 
-**Decision: remove from the schema.** Bump `_meta.version` to `2` and add a
-load-time migration that drops the field if present (silently, no error).
+| From → To | Change |
+|---|---|
+| `"1.0"` → `"2"` | Drop the unused `salary` field. Serde silently ignores the key on load; the next save omits it. |
 
-### 2. `url` is dead in the UI — surface it
-
-The field is parsed and stored, but the detail panel never shows it and there
-is no way to open it. **Decision: show it under "URL" and add `key:U` to open
-in the default browser (`xdg-open` / `open` / `explorer`).**
-
-### 3. Most fields cannot be edited from the TUI
-
-This is the root cause of the friend's confusion. The TUI shows fields the
-user never typed — because the only way to populate them is to edit the JSON
-by hand. **Decision: implement an add/edit form (`key:a` / `key:e`) that
-covers every editable field listed above.**
-
-### 4. `contacts` is read-only in the UI
-
-Notes can be appended (`key:n`) but contacts cannot. **Decision: add `key:c`
-to append a contact (same pattern as `key:n`).**
-
-### 5. Notes truncate silently after 8
-
-The detail panel renders the last 8 notes in reverse chronological order with
-no indicator that more exist. **Decision: when more than 8 notes exist, show
-`... (N more)` and add a way to view the full history (scroll the detail
-panel, or a dedicated overlay).**
-
-### 6. `_meta.version` is parsed but never checked
-
-There is no migration path today. If we change the schema, old files will
-silently lose data or fail to parse. **Decision: read `version` at load,
-apply migrations in order, write back with the latest version.**
-
-### 7. `_meta.next_id` is parsed but never incremented
-
-It exists in anticipation of "add application" but is unused. The future
-`form` flow will read it, assign the id, increment it, and save.
+When old files are encountered, the upgrade is silent and lossless within
+the constraints of the schema change.
 
 ## Compatibility rules
 
@@ -127,3 +102,10 @@ It exists in anticipation of "add application" but is unused. The future
   migration.
 - Hand-edited JSON should remain valid: prefer adding fields with sane
   defaults over making them required.
+
+## Known limitations
+
+- The detail panel renders only the last 8 notes (most recent first); older
+  notes are not visible from the TUI. They are preserved in the JSON.
+- There is no in-app way to delete an individual note or contact. Hand-edit
+  the JSON for now.
