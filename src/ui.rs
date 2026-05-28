@@ -1,6 +1,6 @@
 //! Rendering with ratatui.
 
-use crate::app::{App, Mode, STATUSES};
+use crate::app::{App, AppForm, Mode, STATUSES};
 use crate::data;
 use ratatui::{
     Frame,
@@ -51,7 +51,10 @@ pub fn draw(f: &mut Frame, app: &App) {
     match app.mode {
         Mode::Help => draw_help_overlay(f, f.area()),
         Mode::StatusPicker { idx } => draw_status_picker(f, f.area(), idx),
-        Mode::NoteInput { ref buffer } => draw_note_input(f, f.area(), buffer),
+        Mode::NoteInput { ref buffer } => draw_text_input(f, f.area(), " Add note ", buffer),
+        Mode::ContactInput { ref buffer } => draw_text_input(f, f.area(), " Add contact ", buffer),
+        Mode::Form(ref form) => draw_form(f, f.area(), form),
+        Mode::ConfirmDelete { ref label, .. } => draw_confirm_delete(f, f.area(), label),
         _ => {}
     }
 }
@@ -305,6 +308,11 @@ fn draw_detail(f: &mut Frame, app: &App, area: Rect) {
             lines.push(detail_row("Folder", folder, Some(ACCENT)));
         }
     }
+    if let Some(url) = &a.url {
+        if !url.is_empty() {
+            lines.push(detail_row("URL", url, Some(ACCENT)));
+        }
+    }
 
     if !a.contacts.is_empty() {
         lines.push(Line::raw(""));
@@ -399,6 +407,19 @@ fn draw_statusbar(f: &mut Frame, app: &App, area: Rect) {
             Span::raw(buffer.clone()),
             Span::styled("_", Style::default().fg(Color::DarkGray)),
         ]),
+        Mode::ContactInput { buffer } => Line::from(vec![
+            Span::styled("contact> ", Style::default().fg(ACCENT).bold()),
+            Span::raw(buffer.clone()),
+            Span::styled("_", Style::default().fg(Color::DarkGray)),
+        ]),
+        Mode::Form(_) => Line::from(Span::styled(
+            "  tab/↓ next · shift-tab/↑ prev · enter save · esc cancel",
+            Style::default().fg(Color::DarkGray),
+        )),
+        Mode::ConfirmDelete { .. } => Line::from(Span::styled(
+            "  y confirm · n / esc cancel",
+            Style::default().fg(Color::DarkGray),
+        )),
         Mode::Normal => Line::from(vec![
             help_key("j/k"),
             help_sep(" nav"),
@@ -463,9 +484,18 @@ fn draw_help_overlay(f: &mut Frame, area: Rect) {
         help_line("enter", "confirm"),
         help_line("esc", "cancel"),
         Line::raw(""),
+        section_title("Open"),
+        help_line("O", "open folder in file manager"),
+        help_line("U", "open url in browser"),
+        Line::raw(""),
         section_title("Edit"),
+        help_line("a", "add a new application"),
+        help_line("e", "edit selected application"),
+        help_line("d", "delete selected (confirm)"),
+        help_line("u", "undo last change (up to 10)"),
         help_line("s", "change status (picker)"),
         help_line("n", "add a note (today's date)"),
+        help_line("c", "add a contact (today's date)"),
         Line::raw(""),
         section_title("General"),
         help_line("?", "toggle this help"),
@@ -505,12 +535,120 @@ fn draw_status_picker(f: &mut Frame, area: Rect, selected_idx: usize) {
     f.render_stateful_widget(list, popup, &mut state);
 }
 
-fn draw_note_input(f: &mut Frame, area: Rect, buffer: &str) {
+fn draw_confirm_delete(f: &mut Frame, area: Rect, label: &str) {
+    let popup = centered_rect(60, 25, area);
+    f.render_widget(Clear, popup);
+
+    let block = Block::default()
+        .title(" Confirm delete ")
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(status_color("rejected")));
+
+    let inner = block.inner(popup);
+    f.render_widget(block, popup);
+
+    let lines = vec![
+        Line::raw(""),
+        Line::from(Span::styled(
+            "Permanently delete this application?",
+            Style::default().fg(Color::White).bold(),
+        )),
+        Line::raw(""),
+        Line::from(Span::styled(
+            label.to_string(),
+            Style::default().fg(Color::Gray),
+        )),
+        Line::raw(""),
+        Line::from(Span::styled(
+            "  y confirm · n / esc cancel",
+            Style::default().fg(Color::DarkGray),
+        )),
+    ];
+    f.render_widget(
+        Paragraph::new(lines)
+            .alignment(Alignment::Center)
+            .wrap(Wrap { trim: false }),
+        inner,
+    );
+}
+
+fn draw_form(f: &mut Frame, area: Rect, form: &AppForm) {
+    let popup = centered_rect(70, 90, area);
+    f.render_widget(Clear, popup);
+
+    let title = match form.edit_target_id {
+        None => " Add application ".to_string(),
+        Some(id) => format!(" Edit application #{id} "),
+    };
+    let block = Block::default()
+        .title(title)
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(ACCENT));
+
+    let inner = block.inner(popup);
+    f.render_widget(block, popup);
+
+    // Reserve last 2 lines for hint + error.
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Min(1), Constraint::Length(2)])
+        .split(inner);
+
+    let mut lines: Vec<Line> = Vec::with_capacity(form.fields.len());
+    let label_w: usize = form
+        .fields
+        .iter()
+        .map(|f| f.label.chars().count())
+        .max()
+        .unwrap_or(0);
+    for (i, field) in form.fields.iter().enumerate() {
+        let is_focus = i == form.focus;
+        let label_style = if is_focus {
+            Style::default().fg(ACCENT).bold()
+        } else {
+            Style::default().fg(Color::DarkGray)
+        };
+        let value_style = if is_focus {
+            Style::default().fg(Color::White)
+        } else {
+            Style::default().fg(Color::Gray)
+        };
+        let arrow = if is_focus { "▶ " } else { "  " };
+        let cursor = if is_focus { "_" } else { "" };
+        lines.push(Line::from(vec![
+            Span::styled(arrow.to_string(), Style::default().fg(ACCENT)),
+            Span::styled(
+                format!("{:<width$} ", field.label, width = label_w),
+                label_style,
+            ),
+            Span::styled(field.value.clone(), value_style),
+            Span::styled(cursor.to_string(), Style::default().fg(Color::DarkGray)),
+        ]));
+    }
+    f.render_widget(Paragraph::new(lines).wrap(Wrap { trim: false }), chunks[0]);
+
+    let mut footer = Vec::new();
+    if let Some(err) = &form.error {
+        footer.push(Line::from(Span::styled(
+            format!("✗ {err}"),
+            Style::default().fg(status_color("rejected")).bold(),
+        )));
+    } else {
+        footer.push(Line::raw(""));
+    }
+    footer.push(Line::from(Span::styled(
+        "tab/↓ next · shift-tab/↑ prev · enter save · esc cancel",
+        Style::default().fg(Color::DarkGray),
+    )));
+    f.render_widget(Paragraph::new(footer), chunks[1]);
+}
+
+fn draw_text_input(f: &mut Frame, area: Rect, title: &str, buffer: &str) {
     let popup = centered_rect(60, 20, area);
     f.render_widget(Clear, popup);
 
     let block = Block::default()
-        .title(" Add note ")
+        .title(title.to_string())
         .borders(Borders::ALL)
         .border_style(Style::default().fg(ACCENT));
 

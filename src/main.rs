@@ -131,6 +131,37 @@ fn handle_key(app: &mut App, code: KeyCode, mods: KeyModifiers) {
             }
             return;
         }
+        Mode::ContactInput { .. } => {
+            match code {
+                KeyCode::Esc => app.contact_cancel(),
+                KeyCode::Enter => app.contact_confirm(),
+                KeyCode::Backspace => app.contact_pop(),
+                KeyCode::Char(c) if !mods.contains(KeyModifiers::CONTROL) => app.contact_push(c),
+                _ => {}
+            }
+            return;
+        }
+        Mode::Form(_) => {
+            match code {
+                KeyCode::Esc => app.form_cancel(),
+                KeyCode::Enter => app.form_save(),
+                KeyCode::Char('s') if mods.contains(KeyModifiers::CONTROL) => app.form_save(),
+                KeyCode::Tab | KeyCode::Down => app.form_focus_next(),
+                KeyCode::BackTab | KeyCode::Up => app.form_focus_prev(),
+                KeyCode::Backspace => app.form_pop(),
+                KeyCode::Char(c) if !mods.contains(KeyModifiers::CONTROL) => app.form_push(c),
+                _ => {}
+            }
+            return;
+        }
+        Mode::ConfirmDelete { .. } => {
+            match code {
+                KeyCode::Char('y') | KeyCode::Char('Y') => app.delete_confirm(),
+                KeyCode::Esc | KeyCode::Char('n') | KeyCode::Char('N') => app.delete_cancel(),
+                _ => {}
+            }
+            return;
+        }
         Mode::Normal => {}
     }
 
@@ -149,9 +180,15 @@ fn handle_key(app: &mut App, code: KeyCode, mods: KeyModifiers) {
         KeyCode::Tab => app.cycle_filter(),
         KeyCode::Char('o') => app.cycle_sort(),
         KeyCode::Char('O') => app.open_selected_folder(),
+        KeyCode::Char('U') => app.open_selected_url(),
         KeyCode::Char('/') => app.enter_search(),
         KeyCode::Char('s') => app.open_status_picker(),
         KeyCode::Char('n') => app.open_note_input(),
+        KeyCode::Char('c') => app.open_contact_input(),
+        KeyCode::Char('a') => app.open_add_form(),
+        KeyCode::Char('e') => app.open_edit_form(),
+        KeyCode::Char('d') => app.open_delete_confirm(),
+        KeyCode::Char('u') => app.undo(),
         KeyCode::Char('?') => app.toggle_help(),
         _ => {}
     }
