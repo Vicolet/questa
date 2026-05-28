@@ -65,3 +65,45 @@ jobs:
       - uses: rustsec/audit-check@v2.0.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+
+  docs:
+    name: docs in sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+
+      # Catches broken `///` intra-doc links and bad code samples.
+      - name: cargo doc
+        run: cargo doc --no-deps --document-private-items
+        env:
+          RUSTDOCFLAGS: "-D warnings"
+
+      # The CHANGELOG must have a section dedicated to the current
+      # Cargo.toml version — prevents shipping a release that has no
+      # release notes attached.
+      - name: changelog mentions Cargo.toml version
+        run: |
+          set -euo pipefail
+          version="$(awk -F'"' '/^version *= *"/ { print $2; exit }' Cargo.toml)"
+          if ! grep -q "^## \[$version\]" CHANGELOG.md; then
+            echo "::error::CHANGELOG.md has no '## [$version]' section"
+            exit 1
+          fi
+
+      # Every keybinding listed in the README key table must actually
+      # map to a `KeyCode::Char('…')` somewhere in src/main.rs.
+      # Catches the common "documented a key, forgot to wire it" drift.
+      - name: README keys exist in main.rs
+        run: |
+          set -euo pipefail
+          missing=0
+          while read -r key; do
+            # Skip placeholders / wide labels like "1-5", "tab", "enter".
+            [[ "$key" =~ ^[a-zA-Z?/]$ ]] || continue
+            if ! grep -q "KeyCode::Char('$key')" src/main.rs; then
+              echo "::error::README documents key '$key' but no KeyCode::Char('$key') is wired in src/main.rs"
+              missing=$((missing + 1))
+            fi
+          done < <(grep -oE '^\| `[^`]+` \|' README.md | sed -E "s/^\| \`(.+)\` \|/\1/")
+          test "$missing" -eq 0
