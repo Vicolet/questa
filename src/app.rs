@@ -1107,6 +1107,47 @@ mod tests {
     }
 
     #[test]
+    fn save_leaves_no_tmp_files_in_directory() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("apps.json");
+        let tracker = Tracker {
+            applications: vec![sample_app(1, "Acme", "applied")],
+            meta: Meta {
+                next_id: 2,
+                version: data::CURRENT_SCHEMA_VERSION.into(),
+            },
+        };
+        data::save(&path, &tracker).unwrap();
+        // Final file exists, no leftover .tmp.* sibling.
+        assert!(path.exists());
+        let leftovers: Vec<_> = std::fs::read_dir(dir.path())
+            .unwrap()
+            .filter_map(Result::ok)
+            .map(|e| e.file_name().into_string().unwrap())
+            .filter(|n| n.contains(".tmp."))
+            .collect();
+        assert!(leftovers.is_empty(), "tmp files lingered: {leftovers:?}");
+    }
+
+    #[test]
+    fn save_to_nonwritable_directory_preserves_existing_file() {
+        // Simulate failure by pointing save() at a path whose parent does not
+        // exist. The original file (none here) is untouched and no tmp file
+        // is left behind in any real directory.
+        let dir = tempfile::tempdir().unwrap();
+        let bad_path = dir.path().join("nope/deeper/apps.json");
+        let tracker = Tracker {
+            applications: vec![],
+            meta: Meta {
+                next_id: 1,
+                version: data::CURRENT_SCHEMA_VERSION.into(),
+            },
+        };
+        assert!(data::save(&bad_path, &tracker).is_err());
+        assert!(!bad_path.exists());
+    }
+
+    #[test]
     fn salary_field_is_dropped_after_save() {
         let file = NamedTempFile::new().unwrap();
         let raw = r#"{

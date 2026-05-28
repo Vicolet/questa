@@ -117,10 +117,41 @@ pub fn load(path: &Path) -> Result<Tracker> {
     Ok(t)
 }
 
+/// Write the tracker to disk atomically.
+///
+/// Writes to a sibling temp file in the same directory, fsyncs it, then
+/// renames it into place. On POSIX this guarantees the destination either
+/// holds the previous contents or the new contents — never a half-written
+/// file — even if the process is killed mid-write.
 pub fn save(path: &Path, t: &Tracker) -> Result<()> {
     let s = serde_json::to_string_pretty(t).context("serializing tracker")?;
-    std::fs::write(path, format!("{s}\n"))
-        .with_context(|| format!("writing {}", path.display()))?;
+    let body = format!("{s}\n");
+
+    let dir = path.parent().unwrap_or_else(|| Path::new("."));
+    let file_name = path
+        .file_name()
+        .and_then(|n| n.to_str())
+        .unwrap_or("applications.json");
+    let tmp_path = dir.join(format!(".{file_name}.tmp.{}", std::process::id()));
+
+    let write_result = (|| -> Result<()> {
+        use std::io::Write;
+        let mut f = std::fs::File::create(&tmp_path)
+            .with_context(|| format!("creating {}", tmp_path.display()))?;
+        f.write_all(body.as_bytes())
+            .with_context(|| format!("writing {}", tmp_path.display()))?;
+        f.sync_all()
+            .with_context(|| format!("fsync {}", tmp_path.display()))?;
+        Ok(())
+    })();
+
+    if let Err(e) = write_result {
+        let _ = std::fs::remove_file(&tmp_path);
+        return Err(e);
+    }
+
+    std::fs::rename(&tmp_path, path)
+        .with_context(|| format!("renaming {} -> {}", tmp_path.display(), path.display()))?;
     Ok(())
 }
 
