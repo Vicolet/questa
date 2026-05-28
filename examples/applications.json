@@ -10,7 +10,6 @@
       "url": "https://example.com/jobs/acme-embedded",
       "applied_date": "2026-04-12",
       "deadline": null,
-      "salary": null,
       "folder": "acme-robotics/junior-embedded-engineer",
       "status": "interview",
       "contacts": [
@@ -50,7 +49,6 @@
       "url": "https://example.com/jobs/northwind-sec",
       "applied_date": "2026-04-30",
       "deadline": null,
-      "salary": null,
       "folder": "northwind-bank/it-security-analyst",
       "status": "screening",
       "contacts": [
@@ -82,7 +80,6 @@
       "url": "https://example.com/jobs/helios-ml",
       "applied_date": "2026-05-08",
       "deadline": null,
-      "salary": null,
       "folder": "helios-labs/ml-engineer-junior",
       "status": "applied",
       "contacts": [],
@@ -105,7 +102,6 @@
       "url": "https://example.com/jobs/brightline-csc",
       "applied_date": "2026-03-20",
       "deadline": null,
-      "salary": null,
       "folder": "brightline/cyber-security-consultant",
       "status": "rejected",
       "contacts": [],
@@ -132,7 +128,6 @@
       "url": "https://example.com/jobs/tidewater-intern",
       "applied_date": "2026-04-02",
       "deadline": null,
-      "salary": null,
       "folder": "tidewater/embedded-intern",
       "status": "ghosted",
       "contacts": [],
@@ -155,7 +150,6 @@
       "url": "https://example.com/jobs/quartz-grc",
       "applied_date": "2026-05-05",
       "deadline": null,
-      "salary": null,
       "folder": "quartz-insurance/grc-analyst",
       "status": "screening",
       "contacts": [
@@ -187,7 +181,6 @@
       "url": "https://example.com/jobs/mistral-cps",
       "applied_date": "2026-04-18",
       "deadline": null,
-      "salary": null,
       "folder": "mistral-robotics/junior-cps-engineer",
       "status": "offer",
       "contacts": [
@@ -227,7 +220,6 @@
       "url": "https://example.com/jobs/lighthouse-pt",
       "applied_date": "2026-03-15",
       "deadline": null,
-      "salary": null,
       "folder": "lighthouse-audit/pentest-intern",
       "status": "rejected",
       "contacts": [],
@@ -250,7 +242,6 @@
       "url": "https://example.com/jobs/cascade-cse",
       "applied_date": "2026-05-12",
       "deadline": null,
-      "salary": null,
       "folder": "cascade-cloud/cloud-security-engineer",
       "status": "applied",
       "contacts": [],
@@ -273,7 +264,6 @@
       "url": "https://example.com/jobs/solaris-re",
       "applied_date": "2026-02-20",
       "deadline": null,
-      "salary": null,
       "folder": "solaris-energy/junior-reverse-engineer",
       "status": "ghosted",
       "contacts": [],
@@ -296,7 +286,6 @@
       "url": "https://example.com/jobs/veridian-iso",
       "applied_date": "2026-05-13",
       "deadline": null,
-      "salary": null,
       "folder": "veridian-health/iso-junior",
       "status": "applied",
       "contacts": [],
@@ -319,7 +308,6 @@
       "url": "https://example.com/jobs/polaris-qe",
       "applied_date": "2026-03-04",
       "deadline": null,
-      "salary": null,
       "folder": "polaris-securities/quant-engineering-intern",
       "status": "withdrawn",
       "contacts": [
@@ -351,7 +339,6 @@
       "url": "https://example.com/jobs/cobalt-ai",
       "applied_date": "2026-05-10",
       "deadline": null,
-      "salary": null,
       "folder": "cobalt-defence/ai-research-intern",
       "status": "applied",
       "contacts": [],
@@ -374,7 +361,6 @@
       "url": "https://example.com/jobs/orion-fsd",
       "applied_date": "2026-04-10",
       "deadline": null,
-      "salary": null,
       "folder": "orion-web/fullstack-junior",
       "status": "rejected",
       "contacts": [],
@@ -397,7 +383,6 @@
       "url": "https://example.com/jobs/vanguard-nse",
       "applied_date": "2026-03-28",
       "deadline": null,
-      "salary": null,
       "folder": "vanguard-telecom/network-security-engineer",
       "status": "rejected",
       "contacts": [
@@ -421,7 +406,7 @@
     }
   ],
   "_meta": {
-    "next_id": 16,
-    "version": "1.0"
+    "next_id": 17,
+    "version": "2"
   }
 }

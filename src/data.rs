@@ -5,6 +5,10 @@ use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
+/// Current on-disk schema version. Older files are accepted and silently
+/// upgraded to this version the next time the tracker is saved.
+pub const CURRENT_SCHEMA_VERSION: &str = "2";
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Tracker {
     pub applications: Vec<Application>,
@@ -35,8 +39,6 @@ pub struct Application {
     pub applied_date: Option<String>,
     #[serde(default)]
     pub deadline: Option<String>,
-    #[serde(default)]
-    pub salary: Option<serde_json::Value>,
     #[serde(default)]
     pub folder: Option<String>,
     pub status: String,
@@ -107,8 +109,11 @@ fn data_dir() -> Option<PathBuf> {
 
 pub fn load(path: &Path) -> Result<Tracker> {
     let s = std::fs::read_to_string(path).with_context(|| format!("reading {}", path.display()))?;
-    let t: Tracker =
+    let mut t: Tracker =
         serde_json::from_str(&s).with_context(|| format!("parsing {}", path.display()))?;
+    // In-memory migration: unknown/older versions are upgraded silently.
+    // The new version is persisted on the next save.
+    t.meta.version = CURRENT_SCHEMA_VERSION.to_string();
     Ok(t)
 }
 
