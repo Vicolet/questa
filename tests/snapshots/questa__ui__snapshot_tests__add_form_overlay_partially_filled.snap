@@ -1,0 +1,40 @@
+---
+source: src/ui.rs
+expression: out
+---
+┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ Tracker │ Total 2 · Active 2 · Interview 1 · ⚠ Overdue 1 │ sort: date↓ │ [DATE]                        │
+└────────────────┌ Add application ──────────────────────────────────────────────────────────┐───────────────┘
+┌ All (2) ───────│  Company *   Acme Renamed                                                 │───────────────┐
+│● #2    Northwin│▶ Position *  Backend                                                      │               │
+│● #1    Acme Rob│  Location                                                                 │               │
+│                │  Type                                                                     │               │
+│                │  Ref                                                                      │               │
+│                │  URL                                                                      │               │
+│                │  Applied     [DATE]                                                   │o)             │
+│                │  Deadline                                                                 │               │
+│                │  Folder                                                                   │               │
+│                │  Status      applied                                                      │               │
+│                │  Next action                                                              │               │
+│                │  Next date                                                                │               │
+│                │                                                                           │               │
+│                │                                                                           │               │
+│                │                                                                           │               │
+│                │                                                                           │               │
+│                │                                                                           │               │
+│                │                                                                           │               │
+│                │                                                                           │               │
+│                │                                                                           │               │
+│                │                                                                           │               │
+│                │                                                                           │               │
+│                │                                                                           │               │
+│                │                                                                           │               │
+│                │                                                                           │               │
+│                │                                                                           │               │
+│                │                                                                           │               │
+│                │                                                                           │               │
+│                │                                                                           │               │
+│                │tab/↓ next · shift-tab/↑ prev · enter save · esc cancel                    │               │
+│                └───────────────────────────────────────────────────────────────────────────┘               │
+└───────────────────────────────────────────────────────────┘└───────────────────────────────────────────────┘
+  tab/↓ next · shift-tab/↑ prev · enter save · esc cancel

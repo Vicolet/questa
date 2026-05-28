@@ -762,6 +762,193 @@ fn textwrap_lines(s: &str, width: usize) -> Vec<String> {
     out
 }
 
+#[cfg(test)]
+mod snapshot_tests {
+    use super::*;
+    use crate::app::{App, FieldKey, Filter, STATUSES};
+    use crate::data::{Application, Meta, Tracker};
+    use crate::text::TextAction;
+    use ratatui::Terminal;
+    use ratatui::backend::TestBackend;
+    use ratatui::buffer::Buffer;
+    use std::path::PathBuf;
+
+    /// Flatten a ratatui [`Buffer`] into a newline-separated string of
+    /// cell symbols. Styling is discarded — we snapshot layout, not
+    /// colours.
+    fn buffer_to_string(buf: &Buffer) -> String {
+        let mut out = String::with_capacity((buf.area.width as usize + 1) * buf.area.height as usize);
+        for y in 0..buf.area.height {
+            for x in 0..buf.area.width {
+                out.push_str(buf[(x, y)].symbol());
+            }
+            // Strip trailing spaces so snapshots stay readable.
+            while out.ends_with(' ') {
+                out.pop();
+            }
+            out.push('\n');
+        }
+        out
+    }
+
+    fn fixed_app(_path: PathBuf, status: &str) -> Application {
+        Application {
+            id: 1,
+            company: "Acme Robotics".into(),
+            position: "Embedded Engineer".into(),
+            location: Some("Zurich".into()),
+            app_type: Some("full-time".into()),
+            reference: None,
+            url: Some("https://example.com/job".into()),
+            applied_date: Some("2026-04-12".into()),
+            deadline: None,
+            folder: None,
+            status: status.into(),
+            contacts: vec![],
+            notes: vec![],
+            next_action: Some("prepare interview".into()),
+            next_action_date: Some("2026-05-21".into()),
+        }
+    }
+
+    fn make_app(mode_setup: impl FnOnce(&mut App)) -> App {
+        let path = PathBuf::from("/tmp/__questa_snapshot_unused__.json");
+        let tracker = Tracker {
+            applications: vec![
+                fixed_app(path.clone(), "interview"),
+                Application {
+                    id: 2,
+                    company: "Northwind".into(),
+                    position: "Security Analyst".into(),
+                    location: Some("Geneva".into()),
+                    app_type: None,
+                    reference: None,
+                    url: None,
+                    applied_date: Some("2026-04-30".into()),
+                    deadline: None,
+                    folder: None,
+                    status: "applied".into(),
+                    contacts: vec![],
+                    notes: vec![],
+                    next_action: None,
+                    next_action_date: None,
+                },
+            ],
+            meta: Meta {
+                next_id: 3,
+                version: "2".into(),
+            },
+        };
+        let mut app = App::new(tracker, path);
+        app.filter = Filter::All;
+        mode_setup(&mut app);
+        app
+    }
+
+    fn render(width: u16, height: u16, app: &App) -> String {
+        let backend = TestBackend::new(width, height);
+        let mut terminal = Terminal::new(backend).unwrap();
+        terminal.draw(|f| draw(f, app)).unwrap();
+        buffer_to_string(terminal.backend().buffer())
+    }
+
+    /// Date and rendered-today suffixes are redacted so snapshots stay
+    /// stable across days. Any `YYYY-MM-DD` becomes `[DATE]` and any
+    /// relative-time suffix (`Nd ago`, `in Nd`) becomes `[REL]`.
+    fn snapshot_settings() -> insta::Settings {
+        let mut s = insta::Settings::clone_current();
+        s.add_filter(r"\d{4}-\d{2}-\d{2}", "[DATE]");
+        s.add_filter(r"\d+d ago", "[REL]");
+        s.add_filter(r"in \d+d", "[REL]");
+        s.add_filter(r"\d+d to go", "[REL]");
+        s.add_filter(r"\d+d overdue", "[REL]");
+        s.set_snapshot_path("../tests/snapshots");
+        s
+    }
+
+    #[test]
+    fn main_screen_with_two_entries() {
+        let app = make_app(|_| {});
+        let out = render(110, 30, &app);
+        snapshot_settings().bind(|| insta::assert_snapshot!(out));
+    }
+
+    #[test]
+    fn help_overlay() {
+        let app = make_app(|a| a.toggle_help());
+        let out = render(110, 40, &app);
+        snapshot_settings().bind(|| insta::assert_snapshot!(out));
+    }
+
+    #[test]
+    fn status_picker_overlay() {
+        let app = make_app(|a| {
+            a.selected = 0;
+            a.open_status_picker();
+        });
+        let out = render(110, 30, &app);
+        snapshot_settings().bind(|| insta::assert_snapshot!(out));
+    }
+
+    #[test]
+    fn confirm_delete_overlay() {
+        let app = make_app(|a| {
+            a.selected = 0;
+            a.open_delete_confirm();
+        });
+        let out = render(110, 30, &app);
+        snapshot_settings().bind(|| insta::assert_snapshot!(out));
+    }
+
+    #[test]
+    fn add_form_overlay_partially_filled() {
+        let app = make_app(|a| {
+            a.open_add_form();
+            for c in "Acme Renamed".chars() {
+                a.apply_text_action(TextAction::Insert(c));
+            }
+            // Move focus to Position and start typing.
+            a.form_focus_next();
+            for c in "Backend".chars() {
+                a.apply_text_action(TextAction::Insert(c));
+            }
+        });
+        let out = render(110, 36, &app);
+        snapshot_settings().bind(|| insta::assert_snapshot!(out));
+    }
+
+    #[test]
+    fn note_input_overlay_with_text() {
+        let app = make_app(|a| {
+            a.selected = 0;
+            a.open_note_input();
+            for c in "Recruiter screen passed".chars() {
+                a.apply_text_action(TextAction::Insert(c));
+            }
+        });
+        let out = render(110, 30, &app);
+        snapshot_settings().bind(|| insta::assert_snapshot!(out));
+    }
+
+    #[test]
+    fn empty_state_shows_no_match_message() {
+        let app = make_app(|a| {
+            // Filter so nothing matches.
+            a.filter = Filter::Ghosted;
+        });
+        let out = render(110, 20, &app);
+        snapshot_settings().bind(|| insta::assert_snapshot!(out));
+    }
+
+    // Reference the `Application` / `STATUSES` / `FieldKey` imports so
+    // clippy does not warn about unused symbols on the rare cargo build
+    // where these tests are pruned.
+    #[allow(dead_code)]
+    fn _exercise_imports(_: Application, _: FieldKey) {
+        let _ = STATUSES;
+    }
+}
+
 fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
     let popup = Layout::default()
         .direction(Direction::Vertical)

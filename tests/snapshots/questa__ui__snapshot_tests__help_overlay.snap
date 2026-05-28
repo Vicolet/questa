@@ -1,0 +1,44 @@
+---
+source: src/ui.rs
+expression: out
+---
+┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ Tracker │ Total 2 · Active 2 · Interview 1 · ⚠ Overdue 1 │ sort: date↓ │ [DATE]                        │
+└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+┌ All (2) ──────────────────────────────────────────────────┐┌ Detail ───────────────────────────────────────┐
+│● #2    Northwind       Security Analyst     applied       ││#2  Northwind                                  │
+│● #1    Acme Robotics   Embedded Engineer    interview   ⚠ ││Security Analyst                               │
+│                     ┌ Help ──────────────────────────────────────────────────────────┐                     │
+│                     │  Navigation                                                    │                     │
+│                     │  j / ↓    move down                                            │                     │
+│                     │  k / ↑    move up                                              │[REL])             │
+│                     │  g        jump to top                                          │                     │
+│                     │  G        jump to bottom                                       │                     │
+│                     │                                                                │                     │
+│                     │  Filters                                                       │                     │
+│                     │  1        all                                                  │                     │
+│                     │  2        active (applied/screening/interview/...)             │                     │
+│                     │  3        interview                                            │                     │
+│                     │  4        rejected                                             │                     │
+│                     │  5        ghosted                                              │                     │
+│                     │  tab      cycle filters                                        │                     │
+│                     │                                                                │                     │
+│                     │  Sort                                                          │                     │
+│                     │  o        cycle: date desc → status → company                  │                     │
+│                     │                                                                │                     │
+│                     │  Search                                                        │                     │
+│                     │  /        fuzzy search (company + position)                    │                     │
+│                     │  enter    confirm                                              │                     │
+│                     │  esc      cancel                                               │                     │
+│                     │                                                                │                     │
+│                     │  Open                                                          │                     │
+│                     │  O        open folder in file manager                          │                     │
+│                     │  U        open url in browser                                  │                     │
+│                     │  x        export current view to PDF (typst)                   │                     │
+│                     └────────────────────────────────────────────────────────────────┘                     │
+│                                                           ││                                               │
+│                                                           ││                                               │
+│                                                           ││                                               │
+│                                                           ││                                               │
+└───────────────────────────────────────────────────────────┘└───────────────────────────────────────────────┘
+  press ? or esc to close
