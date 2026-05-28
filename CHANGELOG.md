@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Add (`a`), edit (`e`), and delete (`d` with `y`/`n` confirm) applications from the TUI.
+- Undo (`u`) for the last 10 mutations (status change, note, contact, add, edit, delete).
+- Add a contact entry from the TUI (`c`), dated today.
+- Open the selected application's URL in the default browser (`U`).
+- `URL` field is now shown in the detail panel when set.
+- Schema documentation in `docs/schema.md` listing every field and its UI/edit story.
+
+### Changed
+- Schema bumped to version `2`. The dead `salary` field is silently dropped on next save.
+- `_meta.next_id` is now actually used (incremented on add).
+
+### Removed
+- `salary` field (was declared but never displayed, edited, or populated).
+
 ## [0.1.0] - 2026-05-20
 
 ### Added

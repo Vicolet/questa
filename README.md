@@ -134,9 +134,15 @@ questa --version
 
 | Key | Action                                                       |
 |-----|--------------------------------------------------------------|
+| `a` | add a new application (multi-field form)                     |
+| `e` | edit the selected application (same form, prefilled)         |
+| `d` | delete the selected application (confirm with `y` / `n`)     |
+| `u` | undo the last mutation (history of 10)                       |
 | `s` | change status (picker overlay, `j`/`k` to select, `enter`)   |
 | `n` | add a note (text field, dated today on save)                 |
+| `c` | add a contact (text field, dated today on save)              |
 | `O` | open the selected application's `folder` in the system file manager |
+| `U` | open the selected application's `url` in the default browser |
 
 Mutations write to `applications.json` immediately.
 
@@ -164,7 +170,6 @@ Mutations write to `applications.json` immediately.
       "url": "https://example.com/jobs/...",
       "applied_date": "2026-04-12",
       "deadline": null,
-      "salary": null,
       "folder": "acme-robotics/junior-embedded-engineer",
       "status": "interview",
       "contacts": [
@@ -177,7 +182,7 @@ Mutations write to `applications.json` immediately.
       "next_action_date": "2026-05-21"
     }
   ],
-  "_meta": { "next_id": 2, "version": "1.0" }
+  "_meta": { "next_id": 2, "version": "2" }
 }
 ```
 
