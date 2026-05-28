@@ -53,3 +53,15 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: cargo build --release --locked
+
+  audit:
+    name: cargo audit
+    runs-on: ubuntu-latest
+    # Don't fail the merge gate when a vendor publishes a new advisory
+    # against an unrelated transitive dep.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: rustsec/audit-check@v2.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
