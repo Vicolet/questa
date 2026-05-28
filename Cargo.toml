@@ -17,7 +17,7 @@ exclude = ["docs/screenshots/*", "/target", "/tests", "/exports"]
 [dependencies]
 anyhow = "1"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
-crossterm = "0.28"
+crossterm = "0.29"
 fuzzy-matcher = "0.3"
 ratatui = "0.29"
 serde = { version = "1", features = ["derive"] }
