@@ -762,6 +762,26 @@ fn textwrap_lines(s: &str, width: usize) -> Vec<String> {
     out
 }
 
+fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
+    let popup = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Percentage((100 - percent_y) / 2),
+            Constraint::Percentage(percent_y),
+            Constraint::Percentage((100 - percent_y) / 2),
+        ])
+        .split(r)[1];
+
+    Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([
+            Constraint::Percentage((100 - percent_x) / 2),
+            Constraint::Percentage(percent_x),
+            Constraint::Percentage((100 - percent_x) / 2),
+        ])
+        .split(popup)[1]
+}
+
 #[cfg(test)]
 mod snapshot_tests {
     use super::*;
@@ -777,7 +797,8 @@ mod snapshot_tests {
     /// cell symbols. Styling is discarded — we snapshot layout, not
     /// colours.
     fn buffer_to_string(buf: &Buffer) -> String {
-        let mut out = String::with_capacity((buf.area.width as usize + 1) * buf.area.height as usize);
+        let mut out =
+            String::with_capacity((buf.area.width as usize + 1) * buf.area.height as usize);
         for y in 0..buf.area.height {
             for x in 0..buf.area.width {
                 out.push_str(buf[(x, y)].symbol());
@@ -947,24 +968,4 @@ mod snapshot_tests {
     fn _exercise_imports(_: Application, _: FieldKey) {
         let _ = STATUSES;
     }
-}
-
-fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
-    let popup = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints([
-            Constraint::Percentage((100 - percent_y) / 2),
-            Constraint::Percentage(percent_y),
-            Constraint::Percentage((100 - percent_y) / 2),
-        ])
-        .split(r)[1];
-
-    Layout::default()
-        .direction(Direction::Horizontal)
-        .constraints([
-            Constraint::Percentage((100 - percent_x) / 2),
-            Constraint::Percentage(percent_x),
-            Constraint::Percentage((100 - percent_x) / 2),
-        ])
-        .split(popup)[1]
 }

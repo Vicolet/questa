@@ -3,6 +3,7 @@
 mod app;
 mod data;
 mod export;
+mod logging;
 mod text;
 mod ui;
 
@@ -21,18 +22,26 @@ use std::time::Duration;
 use std::{io, panic};
 
 fn main() -> Result<()> {
+    // Logging is best-effort — if it can't write to the state dir, run anyway.
+    if let Ok(path) = logging::init() {
+        tracing::info!(version = env!("CARGO_PKG_VERSION"), log = %path.display(), "questa starting");
+    }
+
     let args: Vec<String> = std::env::args().collect();
     let data_path = parse_data_arg(&args)
         .map(std::path::PathBuf::from)
         .map(Ok)
         .unwrap_or_else(data::find_data_file)?;
+    tracing::info!(path = %data_path.display(), "loading tracker");
     let tracker = data::load(&data_path)?;
+    tracing::info!(applications = tracker.applications.len(), "tracker loaded");
     let mut app = App::new(tracker, data_path);
 
     setup_panic_hook();
     let mut terminal = setup_terminal()?;
     let result = run(&mut terminal, &mut app);
     restore_terminal(&mut terminal)?;
+    tracing::info!(error = result.is_err(), "questa exiting");
     result
 }
 

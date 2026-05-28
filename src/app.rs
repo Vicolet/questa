@@ -677,6 +677,7 @@ impl App {
 
     fn apply_form_add(&mut self, form: &AppForm) -> Result<String, String> {
         let id = self.tracker.meta.next_id;
+        tracing::info!(id, company = %form.get(FieldKey::Company), "adding application");
         let new_app = Application {
             id,
             company: form.get(FieldKey::Company).to_string(),
@@ -703,6 +704,7 @@ impl App {
         let Some(idx) = self.tracker.applications.iter().position(|a| a.id == id) else {
             return Err(format!("entry #{id} not found"));
         };
+        tracing::info!(id, company = %form.get(FieldKey::Company), "editing application");
         let a = &mut self.tracker.applications[idx];
         a.company = form.get(FieldKey::Company).to_string();
         a.position = form.get(FieldKey::Position).to_string();
@@ -747,6 +749,7 @@ impl App {
         };
         let snapshot = self.tracker.clone();
         let removed = self.tracker.applications.remove(idx);
+        tracing::info!(id = removed.id, company = %removed.company, "deleting application");
         let label = format!("deleted #{} {}", removed.id, removed.company);
         match self.commit(snapshot.clone()) {
             Ok(()) => {
@@ -777,7 +780,15 @@ impl App {
     /// On failure, the caller is responsible for restoring `self.tracker`
     /// from its own copy of the snapshot.
     fn commit(&mut self, snapshot: Tracker) -> Result<()> {
-        self.save()?;
+        if let Err(e) = self.save() {
+            tracing::error!(error = %e, "save failed");
+            return Err(e);
+        }
+        tracing::debug!(
+            applications = self.tracker.applications.len(),
+            history = self.history.len() + 1,
+            "tracker committed"
+        );
         self.history.push_back(snapshot);
         while self.history.len() > MAX_HISTORY {
             self.history.pop_front();
@@ -792,10 +803,12 @@ impl App {
         };
         let backup = std::mem::replace(&mut self.tracker, snapshot);
         if let Err(e) = self.save() {
+            tracing::error!(error = %e, "undo save failed");
             self.tracker = backup;
             self.error = Some(format!("undo save failed: {e}"));
             return;
         }
+        tracing::info!(history_remaining = self.history.len(), "undo applied");
         let len = self.filtered().len();
         if len == 0 {
             self.selected = 0;
@@ -866,9 +879,21 @@ impl App {
             .parent()
             .unwrap_or_else(|| Path::new("."))
             .to_path_buf();
+        tracing::info!(filter = self.filter.label(), dir = %data_dir.display(), "export requested");
         match crate::export::export(&self.tracker, self.filter, &data_dir) {
-            Ok(result) => self.flash = Some(format_export_result(&result)),
-            Err(e) => self.error = Some(format!("export failed: {e}")),
+            Ok(result) => {
+                tracing::info!(
+                    typ = %result.typ_path.display(),
+                    pdf = ?result.pdf_path.as_ref().map(|p| p.display().to_string()),
+                    status = ?result.status,
+                    "export complete"
+                );
+                self.flash = Some(format_export_result(&result));
+            }
+            Err(e) => {
+                tracing::error!(error = %e, "export failed");
+                self.error = Some(format!("export failed: {e}"));
+            }
         }
     }
 

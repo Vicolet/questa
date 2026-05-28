@@ -211,6 +211,20 @@ Mutations write to `applications.json` immediately.
 
 When sorting by status, the order is `interview > technical > offer > screening > applied > accepted > withdrawn > rejected > ghosted`.
 
+## Logs
+
+Questa writes a structured log file to
+`$XDG_STATE_HOME/questa/questa.log` (or
+`~/.local/state/questa/questa.log` as a fallback). Save events,
+mutations, undo, and export results all land here. This is the place
+to look when something behaved unexpectedly.
+
+Level defaults to `info`; raise it via the standard `RUST_LOG` knob:
+
+```bash
+RUST_LOG=questa=debug questa
+```
+
 ## PDF export
 
 Press `x` to export the currently filtered applications. Questa writes
@@ -250,8 +264,10 @@ src/
 ├── main.rs   # entry point, terminal lifecycle, key dispatch
 ├── data.rs   # serde structs + JSON load/save + date helpers
 ├── app.rs    # state machine: filter, sort, mode, mutations
-├── ui.rs     # ratatui rendering: header, table, detail, overlays
-└── export.rs # data + template generation for the PDF export
+├── ui.rs      # ratatui rendering: header, table, detail, overlays
+├── export.rs  # data + template generation for the PDF export
+├── text.rs    # TextBuf + TextAction (cursor-aware single-line input)
+└── logging.rs # tracing subscriber wired to the XDG state directory
 
 templates/
 └── export.typ  # Typst document, baked into the binary via include_str!

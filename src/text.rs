@@ -44,24 +44,18 @@ impl TextBuf {
         self.chars.iter().collect()
     }
 
+    #[allow(dead_code)]
     pub fn is_empty(&self) -> bool {
         self.chars.is_empty()
     }
 
+    #[allow(dead_code)]
     pub fn len(&self) -> usize {
         self.chars.len()
     }
 
     pub fn cursor(&self) -> usize {
         self.cursor
-    }
-
-    /// Split the content at the cursor and return both halves. Useful for
-    /// rendering an insertion caret between the two segments.
-    pub fn split_at_cursor(&self) -> (String, String) {
-        let left: String = self.chars[..self.cursor].iter().collect();
-        let right: String = self.chars[self.cursor..].iter().collect();
-        (left, right)
     }
 
     pub fn insert(&mut self, c: char) {
@@ -261,14 +255,6 @@ mod tests {
         b.cursor = 1;
         b.delete();
         assert_eq!(b.as_string(), "hllo");
-    }
-
-    #[test]
-    fn split_at_cursor_partitions() {
-        let mut b = buf("hello");
-        b.cursor = 2;
-        let (l, r) = b.split_at_cursor();
-        assert_eq!((l.as_str(), r.as_str()), ("he", "llo"));
     }
 
     #[test]

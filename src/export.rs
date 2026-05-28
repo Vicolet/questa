@@ -29,10 +29,12 @@ const DATA_PLACEHOLDER: &str = "__DATA_JSON__";
 
 /// Outcome of an export attempt. The `.typ` and `.json` are always
 /// written on success. `pdf_path` is only set if a `typst` invocation
-/// completed successfully.
+/// completed successfully. `json_path` is exposed for callers who want
+/// to inspect or delete the data file later (tests do; the UI does not).
 #[derive(Debug)]
 pub struct ExportResult {
     pub typ_path: PathBuf,
+    #[allow(dead_code)]
     pub json_path: PathBuf,
     pub pdf_path: Option<PathBuf>,
     pub status: TypstStatus,
